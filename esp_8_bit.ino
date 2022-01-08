@@ -28,7 +28,7 @@
 // Supports NTSC/PAL composite video, Bluetooth Classic keyboards and joysticks
 
 //  Choose one of the video standards: PAL,NTSC
-#define VIDEO_STANDARD PAL
+#define VIDEO_STANDARD NTSC
 
 //  Choose one of the following emulators: EMU_NES,EMU_SMS,EMU_ATARI
 #define EMULATOR EMU_ATARI
@@ -70,9 +70,6 @@ void emu_init()
     _drawn = _frame_counter;
 }
 
-void gen() {
-
-}
 
 void emu_loop()
 {
@@ -172,7 +169,7 @@ void loop()
   #endif
   
   // update the bluetooth edr/hid stack
-  hid_update();
+  //hid_update();
 
   // Dump some stats
   perf();

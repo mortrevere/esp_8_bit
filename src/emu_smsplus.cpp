@@ -388,7 +388,7 @@ public:
         cart.rom = _smsplus_rom;
         cart.type = get_ext(path) == "sms" ? TYPE_SMS : TYPE_GG;
 
-        emu_system_init(audio_frequency);
+        //emu_system_init(audio_frequency);
         sms_init();
         return 0;
     }
@@ -520,20 +520,18 @@ public:
     {
         /*if (_smsplus_rom)
             sms_frame(0);*/
-        int c = 0;
+        unsigned int c = 0;
         for(int i = 0; i < 128; i+=8) {
             for(int j = 0; j < 128; j+=8) {
                 for(int k = 0; k < 8; k++) {
                     for(int l = 0; l < 8; l++) {
-                        _lines[i+k][j+l] = c;
+                        _lines[64+i+k][64+j+l] = c;
                     }
                 }
                 c++;
                 
             }    
-            /*if(frame_counter%100 == 0) {
-                    printf("%d %d\n", i, i/5);
-                }*/
+            
         }
         return 0;
     }

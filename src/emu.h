@@ -97,10 +97,10 @@ public:
     int height;
     int standard; // ntsc = 1
 
-    int audio_frequency;
+    /*int audio_frequency;
     int audio_frame_samples;
     int audio_fraction;
-    int audio_format;
+    int audio_format;*/
 
     int cc_width;           // number of samples per color clock
     int flavor;             // color flavor (cleaner?);
@@ -124,7 +124,7 @@ public:
 
     virtual int update() = 0;
     virtual uint8_t** video_buffer() = 0;
-    virtual int audio_buffer(int16_t* b, int max_len) = 0;
+    //virtual int audio_buffer(int16_t* b, int max_len) = 0;
 
     virtual const uint32_t* ntsc_palette() { return NULL; };
     virtual const uint32_t* pal_palette() { return NULL; };

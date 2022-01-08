@@ -304,24 +304,24 @@ int unpack(const char* dst, const uint8_t* d, int len)
 }
 
 Emu::Emu(const char* n,int w,int h, int st, int aformat, int cc, int f) :
-    name(n),width(w),height(h),standard(st),audio_format(aformat),cc_width(cc),flavor(f)
+    name(n),width(w),height(h),standard(st),/*audio_format(aformat),*/cc_width(cc),flavor(f)
 {
     //audio_frequency = 15625; // requires fixed point sampler
-    audio_frequency = standard == 1 ? 15720 : 15600;
-    audio_frame_samples = standard ? (audio_frequency << 16)/60 : (audio_frequency << 16)/50;   // fixed point sampler
-    audio_fraction = 0;
+    //audio_frequency = standard == 1 ? 15720 : 15600;
+    //audio_frame_samples = standard ? (audio_frequency << 16)/60 : (audio_frequency << 16)/50;   // fixed point sampler
+    //audio_fraction = 0;
 }
 
 Emu::~Emu()
 {
 }
 
-int Emu::frame_sample_count()
+/*int Emu::frame_sample_count()
 {
     int n = audio_frame_samples + audio_fraction;
     audio_fraction = n & 0xFFFF;
     return n >> 16;
-}
+}*/
 
 int Emu::insert(const std::string& path, int flags, int disk_index)
 {

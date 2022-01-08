@@ -54,6 +54,7 @@ void make_yuv_palette(const char* name, const uint32_t* rgb, int len)
     float chroma_scale = BLANKING_LEVEL/2/256;
     //chroma_scale /= 127;  // looks a little washed out
     chroma_scale /= 80;
+    //chroma_scale /= 50;
     for (int i = 0; i < len; i++) {
         uint8_t r = rgb[i] >> 16;
         uint8_t g = rgb[i] >> 8;
@@ -680,7 +681,7 @@ const char* _atari_ext[] = {
 
 //========================================================================================
 //========================================================================================
-
+/*
 class File {
 public:
     FILE *_fd;
@@ -778,13 +779,7 @@ public:
             uint8_t sl[256];
             read(sl,trackoffset+32+8,track.sectorlistsize);
             for (int i = 0; i < track.sectorlistsize; i += 8) {
-                /*
-                int num = sl[i+0];
-                int stat = sl[i+1];
-                int pos = le16(sl+i+2);
-                int data = le32(sl+i+4);
-                printf("%d:%d %02X %d %d\n",track.tracknum,num,stat,pos,data);
-                 */
+                
                 int dat = le32(sl+i+4);
                 if (dat && sl[i])
                     track.toff[sl[i]-1] = dat;
@@ -862,9 +857,11 @@ public:
     }
 };
 
-//========================================================================================
-//========================================================================================
+*/
 
+//========================================================================================
+//========================================================================================
+/*
 static
 int get_info(const string& file, vector<string>& strs)
 {
@@ -924,6 +921,7 @@ int get_info(const string& file, vector<string>& strs)
     strs.push_back(::to_string(len) + " bytes");
     return 0;
 }
+*/
 
 //========================================================================================
 //========================================================================================
@@ -943,12 +941,13 @@ Sound_setup_t Sound_desired = {
 class EmuAtari800 : public Emu {
     uint8_t** _lines;
 public:
+    //EmuAtari800(int ntsc) : Emu("atari800",384,240,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
     EmuAtari800(int ntsc) : Emu("atari800",384,240,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
     {
         _lines = 0;
         _ext = _atari_ext;
         _help = _atari_help;
-        Sound_desired.freq = audio_frequency;
+        //Sound_desired.freq = audio_frequency;
     }
 
     virtual void gen_palettes()
@@ -959,7 +958,7 @@ public:
 
     virtual int info(const string& file, vector<string>& strs)
     {
-        get_info(file,strs);
+        /*get_info(file,strs);
         uint8_t* data;
         int len;
         if (load(file+".cfg",&data,&len) == 0) {
@@ -969,7 +968,7 @@ public:
             s.erase(s.find_last_not_of(" \n\r\t")+1);
             strs.push_back(s);
             delete [] data;
-        }
+        }*/
         return 0;
     }
 
@@ -1054,7 +1053,7 @@ public:
     // raw HID data. handle WII mappings
     virtual void hid(const uint8_t* d, int len)
     {
-        if (d[0] != 0x32 && d[0] != 0x42)
+        /*if (d[0] != 0x32 && d[0] != 0x42)
             return;
         bool ir = *d++ == 0x42;
         int reset = 0;
@@ -1086,13 +1085,13 @@ public:
                 INPUT_key_code = AKEY_5200_START;
             else if (INPUT_key_consol & 2)
                 INPUT_key_code = AKEY_5200_PAUSE;
-        }
+        }*/
     }
 
     // https://www.atariarchives.org/c3ba/page004.php
     virtual void key(int keycode, int pressed, int mods)
     {
-        INPUT_key_code = -1;
+        /*INPUT_key_code = -1;
 
         // map arrow keys to joy0
         switch (keycode) {
@@ -1150,7 +1149,7 @@ public:
         }
 
         if (pressed)
-            INPUT_key_code = keycode;
+            INPUT_key_code = keycode;*/
     }
 
     // allocate most of the big stuff in 32 bit  mem
@@ -1316,23 +1315,46 @@ public:
         return 0;
     }
 
-    unsigned int c = 0;
+    unsigned int _frame_counter = 0;
 
     virtual int update()
     {
+        /*_frame_counter++;
+
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++) {
+                _lines[i][j] = _frame_counter + (i*j/128);
+            }    
+        }
+
+        return 0;*/
         
-        /*for(int i = 0; i < 128; i+=8) {
+        unsigned int c = 0;
+        for(int i = 0; i < 128; i+=8) {
             for(int j = 0; j < 128; j+=8) {
+                for(int k = 0; k < 8; k++) {
+                    for(int l = 0; l < 8; l++) {
+                        _lines[16+i+k][23+j+l] = c;
+                    }
+                }
+                c++;
+            }    
+        }
+
+        //_lines[239][359] = 127;
+        _lines[231][349] = 127;
+
+        /*for(int i = 230; i < 238; i+=8) {
+            for(int j = 230; j < 238; j+=8) {
                 for(int k = 0; k < 8; k++) {
                     for(int l = 0; l < 8; l++) {
                         _lines[i+k][j+l] = c;
                     }
                 }
-                c++;
-                
+                //c++;
             }    
-            
         }*/
+        /*
         for(int i = 0; i < width; i++) {
             for(int j = 0; j < height; j++) {
                 _lines[j][i] = c/100;
@@ -1352,7 +1374,7 @@ public:
         return _lines;
     }
 
-    virtual int audio_buffer(int16_t* b, int len)
+    /*virtual int audio_buffer(int16_t* b, int len)
     {
         int n = frame_sample_count();
         Sound_Callback((uint8_t*)b,n);      // in bytes
@@ -1362,7 +1384,7 @@ public:
             b[i] = s16;
         }
         return n;
-    }
+    }*/
 
     virtual const uint32_t* ntsc_palette()
     {

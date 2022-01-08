@@ -191,12 +191,12 @@ const char* _nes_ext[] = {
     0
 };
 
-int _audio_frequency;
+//int _audio_frequency;
 extern "C"
 void osd_getsoundinfo(sndinfo_t *info)
 {
-    info->sample_rate = _audio_frequency;
-    info->bps = 8;
+    //info->sample_rate = _audio_frequency;
+    //info->bps = 8;
 }
 
 extern "C"
@@ -216,7 +216,7 @@ public:
         _lines = 0;
         _ext = _nes_ext;
         _help = _nes_help;
-        _audio_frequency = audio_frequency;
+        //_audio_frequency = audio_frequency;
     }
 
     virtual void gen_palettes()
@@ -459,20 +459,18 @@ public:
                     printf("%d %d\n", i, i/5);
                 }
         }*/
-        int c = 0;
+        unsigned int c = 0;
         for(int i = 0; i < 128; i+=8) {
             for(int j = 0; j < 128; j+=8) {
                 for(int k = 0; k < 8; k++) {
                     for(int l = 0; l < 8; l++) {
-                        _lines[i+k][j+l] = c;
+                        _lines[64+i+k][64+j+l] = c;
                     }
                 }
                 c++;
                 
             }    
-            /*if(frame_counter%100 == 0) {
-                    printf("%d %d\n", i, i/5);
-                }*/
+            
         }
         
         /*

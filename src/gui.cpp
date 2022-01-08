@@ -971,7 +971,7 @@ public:
         0x0000,0xE783,0xD2BF,0xC4E0,0xC001,0xC4E0,0xD2BF,0xE783
     };
 
-    void update_audio()
+    /*void update_audio()
     {
         int16_t abuffer[313*2];
         int format = _emu->audio_format >> 8;
@@ -988,7 +988,7 @@ public:
             sample_count = _emu->audio_buffer(abuffer,sizeof(abuffer));
         }
         audio_write_16(abuffer,sample_count,format);
-    }
+    }*/
 };
 
 Overlay _overlay;
