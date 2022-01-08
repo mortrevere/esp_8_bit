@@ -16,8 +16,8 @@
 */
 
 #define VIDEO_PIN   26
-#define AUDIO_PIN   18  // can be any pin
-#define IR_PIN      0   // TSOP4838 or equivalent on any pin if desired
+//#define AUDIO_PIN   18  // can be any pin
+//#define IR_PIN      0   // TSOP4838 or equivalent on any pin if desired
 
 int _pal_ = 0;
 
@@ -42,9 +42,9 @@ int _pal_ = 0;
 #include "driver/gpio.h"
 #include "driver/i2s.h"
 
-#ifdef IR_PIN
+/*#ifdef IR_PIN
 #include "ir_input.h"  // ir peripherals
-#endif
+#endif*/
 
 
 //====================================================================================================
@@ -167,25 +167,25 @@ void video_init_hw(int line_width, int samples_per_cc)
     //                   |
     //                   v gnd
 
-    ledcSetup(0,2000000,7);    // 625000 khz is as fast as we go w 7 bits
+    /*ledcSetup(0,2000000,7);    // 625000 khz is as fast as we go w 7 bits
     ledcAttachPin(AUDIO_PIN, 0);
-    ledcWrite(0,0);
+    ledcWrite(0,0);*/
 
     //  IR input if used
-#ifdef IR_PIN
+/*#ifdef IR_PIN
     pinMode(IR_PIN,INPUT);
-#endif
+#endif*/
 }
 
 // send an audio sample every scanline (15720hz for ntsc, 15600hz for PAL)
-inline void IRAM_ATTR audio_sample(uint8_t s)
+/*inline void IRAM_ATTR audio_sample(uint8_t s)
 {
     auto& reg = LEDC.channel_group[0].channel[0];
     reg.duty.duty = s << 4; // 25 bit (21.4)
     reg.conf0.sig_out_en = 1; // This is the output enable control bit for channel
     reg.conf1.duty_start = 1; // When duty_num duty_cycle and duty_scale has been configured. these register won't take effect until set duty_start. this bit is automatically cleared by hardware
     reg.conf0.clk_en = 1;
-}
+}*/
 
 //  Appendix
 
@@ -253,14 +253,14 @@ uint32_t xthal_get_ccount() {
     //return ((uint64_t)hi << 32) | lo;
 }
 
-void audio_sample(uint8_t s);
+//void audio_sample(uint8_t s);
 
-void ir_sample();
+//void ir_sample();
 
-int get_hid_ir(uint8_t* buf)
+/*int get_hid_ir(uint8_t* buf)
 {
     return 0;
-}
+}*/
 
 #endif
 
@@ -791,13 +791,14 @@ void IRAM_ATTR video_isr(volatile void* vbuf)
 
     ISR_BEGIN();
 
-    uint8_t s = _audio_r < _audio_w ? _audio_buffer[_audio_r++ & (sizeof(_audio_buffer)-1)] : 0x20;
-    audio_sample(s);
+    /*uint8_t s = _audio_r < _audio_w ? _audio_buffer[_audio_r++ & (sizeof(_audio_buffer)-1)] : 0x20;
+    audio_sample(s);*/
     //audio_sample(_sin64[_x++ & 0x3F]);
-
+/*
 #ifdef IR_PIN
     ir_sample();
 #endif
+*/
 
     int i = _line_counter++;
     uint16_t* buf = (uint16_t*)vbuf;

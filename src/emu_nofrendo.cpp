@@ -205,6 +205,8 @@ void osd_setsound(void (*playfunc)(void *buffer, int length))
     nes_sound_cb = playfunc;
 }
 
+unsigned int frame_counter = 0;
+
 std::string to_string(int i);
 class EmuNofrendo : public Emu {
     uint8_t** _lines;
@@ -444,8 +446,42 @@ public:
 
     virtual int update()
     {
-        if (_nofrendo_rom)
-            _lines = nes_emulate_frame(true);
+        //if (_nofrendo_rom)
+        //    _lines = nes_emulate_frame(true);
+        
+        /*frame_counter++;
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++) {
+                _lines[i][j] = (i/5);
+                
+            }    
+            if(frame_counter%100 == 0) {
+                    printf("%d %d\n", i, i/5);
+                }
+        }*/
+        int c = 0;
+        for(int i = 0; i < 128; i+=8) {
+            for(int j = 0; j < 128; j+=8) {
+                for(int k = 0; k < 8; k++) {
+                    for(int l = 0; l < 8; l++) {
+                        _lines[i+k][j+l] = c;
+                    }
+                }
+                c++;
+                
+            }    
+            /*if(frame_counter%100 == 0) {
+                    printf("%d %d\n", i, i/5);
+                }*/
+        }
+        
+        /*
+        frame_counter++;
+        for(int i = 0; i < width; i++) {
+            for(int j = 0; j < height; j++) {
+                _lines[j][i] = i+j+frame_counter;
+            }    
+        }*/
         return 0;
     }
 

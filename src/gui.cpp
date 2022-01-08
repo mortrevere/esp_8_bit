@@ -1003,17 +1003,17 @@ void gui_start(Emu* emu, const char* path)
 
 void gui_update()
 {
-    _gui.update_audio();
+    //_gui.update_audio();
     _gui.update_video();
 
-    uint8_t buf[64];
+    /*uint8_t buf[64];
     int n = hid_get(buf,sizeof(buf));    // called from emulation loop
     if (n > 0)
         gui_hid(buf,n);
     
     n = get_hid_ir(buf);
     if (n > 0)
-        gui_hid(buf,n);
+        gui_hid(buf,n);*/
 }
 
 void gui_key(int keycode, int pressed, int mods)

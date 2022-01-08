@@ -1,3 +1,4 @@
+
 /* Copyright (c) 2020, Peter Barrett
 **
 ** Permission to use, copy, modify, and/or distribute this software for
@@ -27,7 +28,7 @@
 // Supports NTSC/PAL composite video, Bluetooth Classic keyboards and joysticks
 
 //  Choose one of the video standards: PAL,NTSC
-#define VIDEO_STANDARD NTSC
+#define VIDEO_STANDARD PAL
 
 //  Choose one of the following emulators: EMU_NES,EMU_SMS,EMU_ATARI
 #define EMULATOR EMU_ATARI
@@ -69,6 +70,10 @@ void emu_init()
     _drawn = _frame_counter;
 }
 
+void gen() {
+
+}
+
 void emu_loop()
 {
     // wait for blanking before drawing to avoid tearing
@@ -76,6 +81,7 @@ void emu_loop()
 
     // Draw a frame, update sound, process hid events
     uint32_t t = xthal_get_ccount();
+    //gen();
     gui_update();
     _frame_time = xthal_get_ccount() - t;
     _lines = _emu->video_buffer();
@@ -116,6 +122,8 @@ void setup()
   mount_filesystem();                       // mount the filesystem!
   _emu = NewEmulator();                     // create the emulator!
   hid_init("emu32");                        // bluetooth hid on core 1!
+
+  //_lines = (uint8_t**)MALLOC32(240*sizeof(uint8_t*),"_lines");
 
   #ifdef SINGLE_CORE
   emu_init();

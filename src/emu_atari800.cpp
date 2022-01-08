@@ -1162,6 +1162,7 @@ public:
         const uint8_t* s = (uint8_t*)Screen_atari;
         for (int y = 0; y < height; y++) {
             _lines[y] = (uint8_t*)s;
+            //_lines[y] = (uint8_t*)(127);
             s += width;
         }
         under_atarixl_os = (uint8_t*)MALLOC32(16*1024,"under_atarixl_os");
@@ -1315,9 +1316,35 @@ public:
         return 0;
     }
 
+    unsigned int c = 0;
+
     virtual int update()
     {
-        return libatari800_next_frame(NULL);
+        
+        /*for(int i = 0; i < 128; i+=8) {
+            for(int j = 0; j < 128; j+=8) {
+                for(int k = 0; k < 8; k++) {
+                    for(int l = 0; l < 8; l++) {
+                        _lines[i+k][j+l] = c;
+                    }
+                }
+                c++;
+                
+            }    
+            
+        }*/
+        for(int i = 0; i < width; i++) {
+            for(int j = 0; j < height; j++) {
+                _lines[j][i] = c/100;
+            }    
+        }
+        c++;
+        /*for(int i = 0; i < width; i++) {
+            for(int j = 0; j < height; j++) {
+                _lines[j][i] = i+j;
+            }    
+        }*/
+        return 0;//libatari800_next_frame(NULL);
     }
 
     virtual uint8_t** video_buffer()

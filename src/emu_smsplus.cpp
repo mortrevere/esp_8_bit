@@ -518,8 +518,23 @@ public:
             
     virtual int update()
     {
-        if (_smsplus_rom)
-            sms_frame(0);
+        /*if (_smsplus_rom)
+            sms_frame(0);*/
+        int c = 0;
+        for(int i = 0; i < 128; i+=8) {
+            for(int j = 0; j < 128; j+=8) {
+                for(int k = 0; k < 8; k++) {
+                    for(int l = 0; l < 8; l++) {
+                        _lines[i+k][j+l] = c;
+                    }
+                }
+                c++;
+                
+            }    
+            /*if(frame_counter%100 == 0) {
+                    printf("%d %d\n", i, i/5);
+                }*/
+        }
         return 0;
     }
 
