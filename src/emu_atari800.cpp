@@ -26,6 +26,8 @@ extern "C" {
 #include "atari800/memory.h"
 }
 
+#include "virtual_space.h"
+
 
 using namespace std;
 string get_ext(const string& s);
@@ -332,69 +334,6 @@ typedef struct {
     const char* name;
 } cart_info;
 
-const cart_info _cart_info[] = {
-    { 0,0,"","" },
-    { 1,8,"800/XL/XE","Standard 8 KB cartridge" },
-    { 2,16,"800/XL/XE","Standard 16 KB cartridge" },
-    { 3,16,"800/XL/XE","OSS two chip 16 KB cartridge (034M)" },
-    { 4,32,"5200","Standard 32 KB 5200 cartridge" },
-    { 5,32,"800/XL/XE","DB 32 KB cartridge" },
-    { 6,16,"5200","Two chip 16 KB 5200 cartridge" },
-    { 7,40,"5200","Bounty Bob Strikes Back 40 KB 5200 cartridge" },
-    { 8,64,"800/XL/XE","64 KB Williams cartridge" },
-    { 9,64,"800/XL/XE","Express 64 KB cartridge" },
-    { 10,64,"800/XL/XE","Diamond 64 KB cartridge" },
-    { 11,64,"800/XL/XE","SpartaDOS X 64 KB cartridge" },
-    { 12,32,"800/XL/XE","XEGS 32 KB cartridge" },
-    { 13,64,"800/XL/XE","XEGS 64 KB cartridge" },
-    { 14,128,"800/XL/XE","XEGS 128 KB cartridge" },
-    { 15,16,"800/XL/XE","OSS one chip 16 KB cartridge" },
-    { 16,16,"5200","One chip 16 KB 5200 cartridge" },
-    { 17,128,"800/XL/XE","Atrax 128 KB cartridge" },
-    { 18,40,"800/XL/XE","Bounty Bob Strikes Back 40 KB cartridge" },
-    { 19,8,"5200","Standard 8 KB 5200 cartridge" },
-    { 20,4,"5200","Standard 4 KB 5200 cartridge" },
-    { 21,8,"800","Right slot 8 KB cartridge" },
-    { 22,32,"800/XL/XE","32 KB Williams cartridge" },
-    { 23,256,"800/XL/XE","XEGS 256 KB cartridge" },
-    { 24,512,"800/XL/XE","XEGS 512 KB cartridge" },
-    { 25,1024,"800/XL/XE","XEGS 1 MB cartridge" },
-    { 26,16,"800/XL/XE","MegaCart 16 KB cartridge" },
-    { 27,32,"800/XL/XE","MegaCart 32 KB cartridge" },
-    { 28,64,"800/XL/XE","MegaCart 64 KB cartridge" },
-    { 29,128,"800/XL/XE","MegaCart 128 KB cartridge" },
-    { 30,256,"800/XL/XE","MegaCart 256 KB cartridge" },
-    { 31,512,"800/XL/XE","MegaCart 512 KB cartridge" },
-    { 32,1024,"800/XL/XE","MegaCart 1 MB cartridge" },
-    { 33,32,"800/XL/XE","Switchable XEGS 32 KB cartridge" },
-    { 34,64,"800/XL/XE","Switchable XEGS 64 KB cartridge" },
-    { 35,128,"800/XL/XE","Switchable XEGS 128 KB cartridge" },
-    { 36,256,"800/XL/XE","Switchable XEGS 256 KB cartridge" },
-    { 37,512,"800/XL/XE","Switchable XEGS 512 KB cartridge" },
-    { 38,1024,"800/XL/XE","Switchable XEGS 1 MB cartridge" },
-    { 39,8,"800/XL/XE","Phoenix 8 KB cartridge" },
-    { 40,16,"800/XL/XE","Blizzard 16 KB cartridge" },
-    { 41,128,"800/XL/XE","Atarimax 128 KB Flash cartridge" },
-    { 42,1024,"800/XL/XE","Atarimax 1 MB Flash cartridge" },
-    { 43,128,"800/XL/XE","SpartaDOS X 128 KB cartridge" },
-    { 44,8,"800/XL/XE","OSS 8 KB cartridge" },
-    { 45,16,"800/XL/XE","OSS two chip 16 KB cartridge (043M)" },
-    { 46,4,"800/XL/XE","Blizzard 4 KB cartridge" },
-    { 47,32,"800/XL/XE","AST 32 KB cartridge" },
-    { 48,64,"800/XL/XE","Atrax SDX 64 KB cartridge" },
-    { 49,128,"800/XL/XE","Atrax SDX 128 KB cartridge" },
-    { 50,64,"800/XL/XE","Turbosoft 64 KB cartridge" },
-    { 51,128,"800/XL/XE","Turbosoft 128 KB cartridge" },
-    { 52,32,"800/XL/XE","Ultracart 32 KB cartridge" },
-    { 53,8,"800/XL/XE","Low bank 8 KB cartridge" },
-    { 54,128,"800/XL/XE","SIC! 128 KB cartridge" },
-    { 55,256,"800/XL/XE","SIC! 256 KB cartridge" },
-    { 56,512,"800/XL/XE","SIC! 512 KB cartridge" },
-    { 57,2,"800/XL/XE","Standard 2 KB cartridge" },
-    { 58,4,"800/XL/XE","Standard 4 KB cartridge" },
-    { 59,4,"800","Right slot 4 KB cartridge" },
-    { 60,32,"800/XL/XE","Blizzard 32 KB cartridge" },
-};
 
 //uint32_t _atari_pal[256];
 const uint32_t atari_palette_rgb[256] = {
@@ -538,79 +477,13 @@ const uint32_t atari_4_phase_pal[] = {
 };
 uint32_t *atari_4_phase_pal_ram = 0;
 
-/*
-extern "C"
-void Sound_Callback(UBYTE *buffer, unsigned int size);
-*/
-
-//input_template_t *LIBATARI800_Input_array;
-//input_template_t _atari_input = {0};
 
 #define POKEY_DIV_64      28            /* divisor for 1.79MHz clock to 64 kHz */
 #define POKEY_DIV_15      114            /* divisor for 1.79MHz clock to 15 kHz */
 #define POKEYSND_FREQ_17_EXACT     1789790    /* exact 1.79 MHz clock freq */
 #define POKEYSND_FREQ_17_APPROX    1787520    /* approximate 1.79 MHz clock freq */
 
-/*
- F1                   Built in user interface -2
- F2                   Option key
- F3                   Select key
- F4                   Start key
- F5                   Reset key ("warm reset")
- Shift+F5             Reboot ("cold reset")
- F6                   Help key (XL/XE only)
- F7                   Break key / Pause during DOS file booting (**)
 
- case SDL_SCANCODE_F1: return AKEY_UI;
- case SDL_SCANCODE_F2: return AKEY_OPTION;
- case SDL_SCANCODE_F3: return AKEY_SELECT;
- case SDL_SCANCODE_F4: return AKEY_START;
- case SDL_SCANCODE_F5: return AKEY_WARMSTART;
- case SDL_SCANCODE_F6: return AKEY_HELP;
- case SDL_SCANCODE_F7: return AKEY_BREAK;
-*/
-
-// hid/sdl scancode to atari scancode
-const int16_t _scancode_to_atari[512] = {
-     -1, -1, -1, -1, 63, 21, 18, 58, 42, 56, 61, 57, 13,  1,  5,  0,
-     37, 35,  8, 10, 47, 40, 62, 45, 11, 16, 46, 22, 43, 23, 31, 30,
-     26, 24, 29, 27, 51, 53, 48, 50, 12, 28, 52, 44, 33, 14, 15,112,
-    114, 70, -1,  2,115, -1, 32, 34, 38, 60, -1,-12,-11,-10, -2, 17,
-     -5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    // shift
-     -1, -1, -1, -1,127, 85, 82,122,106,120,125,121, 77, 65, 69, 64,
-    101, 99, 72, 74,111,104,126,109, 75, 80,110, 86,107, 87, 95,117,
-     90, 88, 93, 71, 91,  7,112,114, 76, 92,116,108, 97, 78,  6,112,
-    114, 79, -1, 66, 94, -1, 54, 55,102,124, -1, -1, -1, -1, -3, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    // ctrl
-     -1, -1, -1, -1,191,149,146,186,170,184,189,185,141,129,133,128,
-    165,163,136,138,175,168,190,173,139,144,174,150,171,151,159,158,
-    154,152,157,155,179,181,176,178,140,156,180,172,161,142,143, -1,
-     -1, -1, -1,130, -1, -1,160,162,166, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,135,
-    134,143,142, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    // shift ctrl
-     -1, -1, -1, -1,255,213,210,250,234,248,253,249,205,193,197,192,
-    229,227,200,202,239,232,254,237,203,208,238,214,235,215,223,222,
-    218,216,221,219,243,245,240,242,204,220,244,236,225,206,207, -1,
-     -1, -1, -1,194, -1, -1,224,226,230, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
 
 #define INPUT_STICK_BACK        0x02
 #define INPUT_STICK_LEFT        0x04
@@ -679,252 +552,6 @@ const char* _atari_ext[] = {
     0
 };
 
-//========================================================================================
-//========================================================================================
-/*
-class File {
-public:
-    FILE *_fd;
-    size_t _len;
-
-    static int le16(const void* d)
-    {
-        const uint8_t* b = (const uint8_t*)d;
-        return b[0] | (b[1] << 8);
-    }
-
-    static int le32(const void* d)
-    {
-        const uint8_t* b = (const uint8_t*)d;
-        return b[0] | (b[1] << 8) | (b[2] << 8) | (b[3] << 8);
-    }
-
-    File(const string& name) : _len(0) {
-        _fd = fopen(name.c_str(),"rb");
-        if (_fd) {
-            fseek(_fd,0,SEEK_END);
-            _len = ftell(_fd);
-        }
-    }
-
-    virtual ~File()
-    {
-        if (_fd)
-            fclose(_fd);
-    }
-
-    int read(void* dst, int offset, int len)
-    {
-        if (!_fd)
-            return -1;
-        fseek(_fd,offset,SEEK_SET);
-        return (int)fread(dst,1,len,_fd);
-    }
-};
-
-class AtariDisk : public File {
-public:
-    int _type;
-    int _size;
-    int _secsize;
-
-    AtariDisk(const string& name) : File(name),_type(-1)
-    {
-        uint8_t hdr[48];
-        read(hdr,0,sizeof(hdr));
-        if (hdr[0] == 'A' && hdr[1] == 'T' && hdr[2] == '8' && hdr[3] == 'X') {
-            if (vapi(le32(hdr + 28)) == 0)
-                _type = 1;
-        } else if (le16(hdr) == 0x296) {
-            _type = 0;
-            _size = le16(hdr + 2);
-            _secsize = le16(hdr + 4);
-            _size += hdr[6] << 16;       // high part of size
-            _size <<= 4;                 //
-        }
-    }
-
-    class Track {
-    public:
-        int offset;
-        int size;
-        int type;
-        int tracknum;
-        int sectorcount;
-        int headersize;
-        int sectorlistsize;
-        int16_t toff[18];
-    };
-    vector<Track> _tracks;
-
-    // http://whizzosoftware.com/sio2arduino/vapi.html
-    int vapi(int trackoffset)
-    {
-        _type = 1;
-        _secsize = 128;
-        while (trackoffset > 0 && trackoffset < _len) {
-            uint8_t t[32+8];
-            if (read(t,trackoffset,sizeof(t)) != sizeof(t))
-                return -1;
-            Track track;
-            track.offset = trackoffset;
-            track.size = le32(t);
-            track.type = le16(t+4);
-            track.tracknum = t[8];
-            track.sectorcount = le16(t+10);
-            track.headersize = le32(t+20);
-            track.sectorlistsize = le32(t+32) - 8;
-            for (int i = 0; i < 16; i++)
-                track.toff[i] = 0;
-            uint8_t sl[256];
-            read(sl,trackoffset+32+8,track.sectorlistsize);
-            for (int i = 0; i < track.sectorlistsize; i += 8) {
-                
-                int dat = le32(sl+i+4);
-                if (dat && sl[i])
-                    track.toff[sl[i]-1] = dat;
-            }
-            _tracks.push_back(track);
-            trackoffset += track.size;
-        }
-        _size = 720*_secsize;
-        return 0;
-    }
-
-    int sectoroffset(int n)
-    {
-        if (n <= 3)
-            return 16 + n*0x80;
-        return 16 + 3*0x80 + (n-3)*_secsize;
-    }
-
-    int readsector(int n, uint8_t* dst)
-    {
-        if (_type == 0)
-            return read(dst,sectoroffset(n),_secsize);
-
-        if (_type == 1) {
-            int track = n/18;
-            for (int i = 0; i < _tracks.size(); i++) {
-                if (_tracks[i].tracknum == track) {
-                    auto& t = _tracks[i];
-                    int dat = t.toff[n % 18];
-                    if (!dat) {
-                        memset(dst,0,_secsize);
-                        return _secsize;
-                    }
-                    return read(dst,t.offset + dat,_secsize);
-                }
-            }
-            return -1;
-        }
-        return -1;
-    }
-
-    // http://atari.kensclassics.org/dos.htm
-    // note: indexes are 1 based in the docs
-    void dir(vector<string>& s)
-    {
-        s.push_back("");
-        uint8_t a[256];
-        if (readsector(359,a) != _secsize)
-            return;
-        int free = le16(a+3);
-        //if (free < 0 || free > 707)
-        //    return;
-        for (int n = 360; n < 368; n++) {
-            if (readsector(n,a) != _secsize)
-                return;
-            for (int i = 0; i < _secsize; i += 16)
-            {
-                int flags = a[i];
-                int total = le16(a+i+1);
-                if (!total || !(flags & 0x40))  // not an ordinary file?
-                    break;
-                //int start = le16(a+i+3)-1;
-                string name = string((char*)a+i+5,8+3);
-                if (flags & 0x80)
-                    ;   // deleted
-                else {
-                    string t = ::to_string(total);
-                    while (t.length() < 3)
-                        t = "0" + t;
-                    s.push_back((flags & 0x20 ? "* " :"  ") + name + " " + t);
-                }
-            }
-        };
-        s.push_back(::to_string(free) + " free sectors");
-    }
-};
-
-*/
-
-//========================================================================================
-//========================================================================================
-/*
-static
-int get_info(const string& file, vector<string>& strs)
-{
-    string ext = get_ext(file);
-    uint8_t hdr[48];
-    int len = Emu::head(file,hdr,sizeof(hdr));
-    string name = file.substr(file.find_last_of("/") + 1);
-    strs.push_back(name);
-    strs.push_back("");
-
-    // carts
-    if (ext == "car" || ext == "bin" || ext == "rom") {
-        if (hdr[0] == 'C' && hdr[1] == 'A' && hdr[2] == 'R' && hdr[3] == 'T' && hdr[7] <= 60)
-        {
-            strs.push_back(_cart_info[hdr[7]].name);
-            strs.push_back(_cart_info[hdr[7]].machine);
-        } else {
-            strs.push_back(::to_string(len/1024) + "k Cartridge");
-        }
-        return 0;
-    }
-
-    if (ext == "xex") {
-        strs.push_back(::to_string((len + 0x3FF)/1024) + "k Executable");
-        int offset = 0;
-        File f(file);
-        while (offset < len) {
-            uint16_t start = 0xFFFF;
-            uint16_t end = 0xFFFF;
-            uint16_t addr = 0xFFFF;
-            while (start == 0xFFFF) {
-                if (f.read(&start,offset,2) != 2)
-                    break;
-                offset += 2;
-            }
-            if (f.read(&end,offset,2) != 2)
-                break;
-            char buf[64];
-            if (start == 0x2E0 || start == 0x2E2) {
-                f.read(&addr,offset+2,2);
-                sprintf(buf,"%04X at %04X:%04X %s:%04X",end+1-start,start,end,start == 0x2E0 ? "run":"ini",addr);
-            } else {
-                sprintf(buf,"%04X at %04X:%04X",end+1-start,start,end);
-            }
-            strs.push_back(buf);
-            offset += 2 + end+1 - start;
-        }
-        return 0;
-    }
-
-    if (ext == "atr" || ext == "atx") {
-        strs.push_back(::to_string((len + 0x3FF)/1024) + "k Disk Image");
-        AtariDisk disk(file);
-        disk.dir(strs);
-        return 0;
-    }
-    strs.push_back(::to_string(len) + " bytes");
-    return 0;
-}
-*/
-
-//========================================================================================
-//========================================================================================
 
 extern uint8_t* under_atarixl_os;  // allocate in 32 bit mem
 extern uint8_t* under_cart809F;
@@ -940,13 +567,19 @@ Sound_setup_t Sound_desired = {
 
 class EmuAtari800 : public Emu {
     uint8_t** _lines;
+    VSpace* _vspace;
 public:
+
     //EmuAtari800(int ntsc) : Emu("atari800",384,240,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
     EmuAtari800(int ntsc) : Emu("atari800",384,240,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
     {
         _lines = 0;
         _ext = _atari_ext;
         _help = _atari_help;
+
+        init_screen();
+        _vspace = new VSpace(_lines, width, height);
+
         //Sound_desired.freq = audio_frequency;
     }
 
@@ -958,17 +591,6 @@ public:
 
     virtual int info(const string& file, vector<string>& strs)
     {
-        /*get_info(file,strs);
-        uint8_t* data;
-        int len;
-        if (load(file+".cfg",&data,&len) == 0) {
-            strs.push_back("");
-            strs.push_back(".cfg file:");
-            string s = string((const char*)data,len);
-            s.erase(s.find_last_not_of(" \n\r\t")+1);
-            strs.push_back(s);
-            delete [] data;
-        }*/
         return 0;
     }
 
@@ -987,169 +609,16 @@ public:
         console_keys = pressed ? (console_keys & ~mask) : (console_keys | mask);
     }
 
-    // wiimote is rotated 90%
-    const uint32_t _common_atari[16] = {
-        0,  // msb
-        0,
-        0,
-        CONSOLE_START<<8,       // PLUS
-        INPUT_STICK_LEFT,       // UP
-        INPUT_STICK_RIGHT,      // DOWN
-        INPUT_STICK_FORWARD,    // RIGHT
-        INPUT_STICK_BACK,       // LEFT
-
-        0, // HOME
-        0,
-        0,
-        CONSOLE_SELECT<<8,  // MINUS
-        INPUT_TRIGGER,      // A
-        INPUT_TRIGGER,      // B
-        INPUT_TRIGGER,      // ONE
-        INPUT_TRIGGER,      // TWO
-    };
-
-    const uint32_t _classic_atari[16] = {
-        INPUT_STICK_RIGHT,    // RIGHT
-        INPUT_STICK_BACK,     // DOWN
-        0,                    // LEFT_TOP
-        CONSOLE_SELECT<<8,    // MINUS
-        0,                    // HOME
-        CONSOLE_START<<8,     // PLUS
-        0,                    // RIGHT_TOP
-        0,
-
-        0,              // LOWER_LEFT
-        INPUT_TRIGGER,  // B
-        INPUT_TRIGGER,  // Y
-        INPUT_TRIGGER,  // A
-        INPUT_TRIGGER,  // X
-        0,              // LOWER_RIGHT
-        INPUT_STICK_LEFT,     // LEFT
-        INPUT_STICK_FORWARD   // UP
-    };
-
-    const uint32_t _generic_atari[16] = {
-        0,                  // GENERIC_OTHER   0x8000
-        0,                  // GENERIC_FIRE_X  0x4000  // RETCON
-        0,                  // GENERIC_FIRE_Y  0x2000
-        0,                  // GENERIC_FIRE_Z  0x1000
-
-        INPUT_TRIGGER,      //GENERIC_FIRE_A  0x0800
-        INPUT_TRIGGER,      //GENERIC_FIRE_B  0x0400
-        INPUT_TRIGGER,      //GENERIC_FIRE_C  0x0200
-        0,                  //GENERIC_RESET   0x0100     // ATARI FLASHBACK
-
-        CONSOLE_START<<8,   //GENERIC_START   0x0080
-        CONSOLE_SELECT<<8,  //GENERIC_SELECT  0x0040
-        INPUT_TRIGGER,      //GENERIC_FIRE    0x0020
-        INPUT_STICK_RIGHT,  //GENERIC_RIGHT   0x0010
-
-        INPUT_STICK_LEFT,   //GENERIC_LEFT    0x0008
-        INPUT_STICK_BACK,   //GENERIC_DOWN    0x0004
-        INPUT_STICK_FORWARD,//GENERIC_UP      0x0002
-        0,                  //GENERIC_MENU    0x0001
-    };
-
     // raw HID data. handle WII mappings
     virtual void hid(const uint8_t* d, int len)
     {
-        /*if (d[0] != 0x32 && d[0] != 0x42)
-            return;
-        bool ir = *d++ == 0x42;
-        int reset = 0;
-        for (int i = 0; i < 4; i++) {
-            uint32_t p;
-            if (ir) {
-                uint16_t m =  i < 2 ? (d[0] + (d[1] << 8)) : 0;
-                p = generic_map(m,_generic_atari);
-                d += 2;
-            } else
-                p = wii_map(i,_common_atari,_classic_atari);
-            _joy[i] = p & 0x0F;
-            _trig[i] = (p >> 4) & 1;
-            if (i == 0)
-                INPUT_key_consol = (p >> 8) ^ 7;
-            if ((p & (CONSOLE_SELECT<<8)) && (p & (CONSOLE_START<<8)))
-                reset++;
-        }
-
-        if (reset)
-            INPUT_key_code = AKEY_WARMSTART;
-        else
-            INPUT_key_code = -1;
-
-        if (Atari800_machine_type == Atari800_MACHINE_5200) {
-            if (reset)
-                INPUT_key_code = AKEY_5200_RESET;
-            else if (INPUT_key_consol & 1)
-                INPUT_key_code = AKEY_5200_START;
-            else if (INPUT_key_consol & 2)
-                INPUT_key_code = AKEY_5200_PAUSE;
-        }*/
+       
     }
 
     // https://www.atariarchives.org/c3ba/page004.php
     virtual void key(int keycode, int pressed, int mods)
     {
-        /*INPUT_key_code = -1;
-
-        // map arrow keys to joy0
-        switch (keycode) {
-            case 82: joy(0,pressed,INPUT_STICK_FORWARD); break;
-            case 81: joy(0,pressed,INPUT_STICK_BACK); break;
-            case 80: joy(0,pressed,INPUT_STICK_LEFT); break;
-            case 79: joy(0,pressed,INPUT_STICK_RIGHT); break;
-            case 225: trig(0,pressed); break; // left shift key
-        }
-
-        if (keycode >= 128)
-            return;
-
-        if (Atari800_machine_type == Atari800_MACHINE_5200) {
-            switch (keycode) {
-                case 61: keycode =  AKEY_5200_START; break; // F4
-                case 62: keycode =  AKEY_5200_RESET; break; // F5
-
-                case 22: keycode =  AKEY_5200_START; break; // 's'
-                case 19: keycode =  AKEY_5200_PAUSE; break; // 'p'
-                case 21: keycode =  AKEY_5200_RESET; break; // 'r'
-
-                case 30: keycode =  AKEY_5200_1; break; // 1
-                case 31: keycode =  AKEY_5200_2; break; // 2
-                case 32: keycode =  (KEY_MOD_SHIFT & mods) ? AKEY_5200_HASH : AKEY_5200_3; break; // 3
-                case 33: keycode =  AKEY_5200_4; break; // 4
-                case 34: keycode =  AKEY_5200_5; break; // 5
-                case 35: keycode =  AKEY_5200_6; break; // 6
-                case 36: keycode =  AKEY_5200_7; break; // 7
-                case 37: keycode =  (KEY_MOD_SHIFT & mods) ? AKEY_5200_ASTERISK : AKEY_5200_8; break; // 8
-                case 38: keycode =  AKEY_5200_9; break; // 9
-                case 39: keycode =  AKEY_5200_0; break; // 0
-
-                case 46: keycode = AKEY_5200_HASH; break;   // =
-                default: keycode = AKEY_NONE;
-            }
-        } else {
-            if ((KEY_MOD_CTRL & mods) && (KEY_MOD_SHIFT & mods)) {
-                keycode += 128*3;
-            } else if (KEY_MOD_CTRL & mods) {
-                keycode += 128*2;
-            } else if (KEY_MOD_SHIFT & mods) {
-                keycode += 128*1;
-            } else {
-            }
-            keycode = _scancode_to_atari[keycode];
-
-            // handle console_keys state
-            switch (keycode) {
-                case AKEY_OPTION: console_keys = pressed ? (console_keys & ~4) : (console_keys | 4); break;
-                case AKEY_SELECT: console_keys = pressed ? (console_keys & ~2) : (console_keys | 2); break;
-                case AKEY_START: console_keys = pressed ? (console_keys & ~1) : (console_keys | 1); break;
-            }
-            INPUT_key_consol = console_keys;
-        }
-
-        if (pressed)
-            INPUT_key_code = keycode;*/
+        
     }
 
     // allocate most of the big stuff in 32 bit  mem
@@ -1179,29 +648,7 @@ public:
 
     int parse_cfg(const string& str, vector<string>& s, vector<char*>& argv)
     {
-        string w;
-        for (size_t i = 0; i < str.length(); i++)
-        {
-            char c = str[i];
-            if (isspace(c)) {
-                if (w.length())
-                    s.push_back(w);
-                w.clear();
-            } else if(c == '\"' ){
-                i++;
-                while(i < str.length() && str[i] != '\"') {
-                    w += str[i];
-                    i++;
-                }
-            } else {
-                w += c;
-            }
-        }
-        if (w.length())
-            s.push_back(w);
-        for (size_t i = 0; i < s.size(); i++)
-            argv.push_back((char*)s[i].c_str());
-        return (int)s.size();
+        return 0;
     }
 
     // https://github.com/dmlloyd/atari800/blob/master/DOC/USAGE
@@ -1216,83 +663,26 @@ public:
 
     string patch_cfg(const string& cfg, int mods)
     {
-        string c = cfg;
-        if (c.find("-ntsc") == -1 && c.find("-pal") == -1)
-            c += tv_standard();
-        if (c.find("-basic") == -1 && c.find("-nobasic") == -1)
-            c += (mods & 2) ? " -basic" : " -nobasic"; // insert on shift key
-        return c;
+        return "";
     }
 
     string get_cfg(const string& path)
     {
-        // read extension. figure out what kind of file we have
-        string ext = get_ext(path);
-
-        // open based on config settings if present
-        {
-            int len;
-            uint8_t* data;
-            if (load(path+".cfg",&data,&len) == 0) {
-                string cfg((const char*)data,len);
-                delete data;
-                return cfg + " \"" + path + "\"";
-            }
-        }
-
-        // guess type
-        int cart_type = 0;
-        uint8_t data[64];
-        int len = head(path,data,sizeof(data));
-        switch (len) {
-            case 0x2000: cart_type = 1; break;  // probably
-            case 0x4000: cart_type = 2; break;  // probably
-            case 0x8000: cart_type = 4; break;  // probably
-            default:
-                if (ext == "cas")
-                    return "-boottape \"" + path + "\"";
-        }
-
-        switch (cart_type) {
-            case 1: return "-atari -cart-type 1 -cart \"" + path + "\"";
-            case 2: return "-atari -cart-type 2 -cart \"" + path + "\"";
-            case 4: return "-5200 -cart-type 4 -cart \"" + path + "\"";
-        }
-
-        // no idea. just go with defaults of xl
-        string host = path.substr(0,path.find_last_of("/"));
-        return "-xl \"" + path + "\"" + " -H1 \"" + host + "\"";
+        return "";
     }
 
     //  default media is basic/dos
     virtual int make_default_media(const string& path)
     {
-        unpack((path + "/dos20.atr").c_str(),dos20_atr,sizeof(dos20_atr));
-        unpack((path + "/balls_forever.xex").c_str(),balls_forever_xex,sizeof(balls_forever_xex));
-        unpack((path + "/paperweight.xex").c_str(),paperweight_xex,sizeof(paperweight_xex));
-        unpack((path + "/boink.xex").c_str(),boink_xex,sizeof(boink_xex));
-        unpack((path + "/more.xex").c_str(),more_xex,sizeof(more_xex));
-        unpack((path + "/callisto.xex").c_str(),callisto_xex,sizeof(callisto_xex));
-        unpack((path + "/janes_program.xex").c_str(),janes_program_xex,sizeof(janes_program_xex));
-        unpack((path + "/numen_rubik.atr").c_str(),numen_rubik_atr,sizeof(numen_rubik_atr));
-        unpack((path + "/atari_robot.xex").c_str(),atari_robot_xex,sizeof(atari_robot_xex));
-        unpack((path + "/callisto.xex").c_str(),callisto_xex,sizeof(callisto_xex));
-        unpack((path + "/maze.xex").c_str(),maze_xex,sizeof(maze_xex));
-        unpack((path + "/mini_zork.atr").c_str(),mini_zork_atr,sizeof(mini_zork_atr));
-        unpack((path + "/gtia_blast.xex").c_str(),gtia_blast_xex,sizeof(gtia_blast_xex));
-        unpack((path + "/runner_bear.xex").c_str(),runner_bear_xex,sizeof(runner_bear_xex));
-        unpack((path + "/yoomp_nt.xex").c_str(),yoomp_nt_xex,sizeof(yoomp_nt_xex));
-        unpack((path + "/raymaze_2000_ntsc.xex").c_str(),yoomp_nt_xex,sizeof(yoomp_nt_xex));
-        unpack((path + "/gravity_worms.atr").c_str(),gravity_worms_atr,sizeof(gravity_worms_atr));
-        unpack((path + "/wasteland.atr").c_str(),wasteland_atr,sizeof(wasteland_atr));
-        unpack((path + "/star_raiders_II.atr").c_str(),star_raiders_II_atr,sizeof(star_raiders_II_atr));
         return 0;
     }
 
     virtual int insert(const std::string& path, int flags, int disk_index)
     {
-        if (!_lines)
+        /*if (!_lines)
             init_screen();
+
+        _vspace = new VSpace(_lines, width, height);*/
 
         // just insert a disk
         if (((flags & 1) == 0) && (get_ext(path) == "atr")) {
@@ -1328,8 +718,10 @@ public:
         }
 
         return 0;*/
+        //_vspace->_state();
+        _vspace->update();
         
-        unsigned int c = 0;
+        /*unsigned int c = 0;
         for(int i = 0; i < 128; i+=8) {
             for(int j = 0; j < 128; j+=8) {
                 for(int k = 0; k < 8; k++) {
@@ -1342,7 +734,7 @@ public:
         }
 
         //_lines[239][359] = 127;
-        _lines[231][349] = 127;
+        _lines[231][349] = 127;*/
 
         /*for(int i = 230; i < 238; i+=8) {
             for(int j = 230; j < 238; j+=8) {
@@ -1373,18 +765,6 @@ public:
     {
         return _lines;
     }
-
-    /*virtual int audio_buffer(int16_t* b, int len)
-    {
-        int n = frame_sample_count();
-        Sound_Callback((uint8_t*)b,n);      // in bytes
-        uint8_t* b8 = (uint8_t*)b;
-        for (int i = n-1; i >= 0; i--) {
-            int s16 = (b8[i] ^ 0x80) << 8;
-            b[i] = s16;
-        }
-        return n;
-    }*/
 
     virtual const uint32_t* ntsc_palette()
     {
@@ -1422,50 +802,19 @@ int PLATFORM_Keyboard(void)
 extern "C"
 int PLATFORM_PORT(int num)
 {
-    if (num == 0)
-        return (_joy[0] | (_joy[1] << 4)) ^ 0xFF;  // sense is inverted
-    if (num == 1)
-        return (_joy[2] | (_joy[3] << 4)) ^ 0xFF;  // sense is inverted
-    return 0xff;
+
 }
 
 extern "C"
 int PLATFORM_TRIG(int num)
 {
-    if (num < 0 || num >= 4)
-        return 1;
-    return _trig[num] ^ 1;
+
 }
 
 extern "C"
 void LIBATARI800_Mouse(void)
 {
-#if 0
-    int mouse_mode;
 
-    input_template_t *input = LIBATARI800_Input_array;
-
-    mouse_mode = input->mouse_mode;
-
-    if (mouse_mode == LIBATARI800_FLAG_DIRECT_MOUSE) {
-        int potx, poty;
-
-        potx = input->mousex;
-        poty = input->mousey;
-        if(potx < 0) potx = 0;
-        if(poty < 0) poty = 0;
-        if(potx > 227) potx = 227;
-        if(poty > 227) poty = 227;
-        POKEY_POT_input[INPUT_mouse_port << 1] = 227 - potx;
-        POKEY_POT_input[(INPUT_mouse_port << 1) + 1] = 227 - poty;
-    }
-    else {
-        INPUT_mouse_delta_x = input->mousex;
-        INPUT_mouse_delta_y = input->mousey;
-    }
-
-    INPUT_mouse_buttons = input->mouse_buttons;
-#endif
 }
 
 Emu* NewAtari800(int ntsc)
