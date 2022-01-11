@@ -67,7 +67,7 @@ void VSpace::update() {
     //}
     float x,y;
 
-    uint8_t t = frame_counter%240;
+    uint8_t t = (2*frame_counter)%240;
 
     //uint8_t t2 = 10+frame_counter%50;
     //uint8_t t2 = 60-frame_counter%50;
@@ -116,8 +116,31 @@ void VSpace::update() {
             //    _lines[i][j] = _lines[abs(i-j)][j];
             //}
 
-            _lines[i][j] = (i+j)/abs(i-j);
+           /* if(j != 0) {
+                _lines[i][j] = color_scale((frame_counter*3 + i)/j, 134, 206);
+            }
+            else {
+                _lines[i][j] = 0;
+            }*/
 
+            //_lines[i][j] = color_scale((frame_counter*3 + i)/j, 134, 206);
+
+
+            //if (j != 0) _lines[i][j] = color_scale((i*(i+frame_counter))/(t2 + j),134, 206);
+            //if (random(0,30) == 0) _lines[i][random(0, width)] = (frame_counter/10); 
+            //if(i*(t2/10) > j) {
+                //_lines[i][j] = color_scale((i/(t2+1))^(j/(t2+1)), 134, 206);
+                //if (random(0,12) == 0) _lines[i][random(0, width)] = (frame_counter/100); 
+            if ((i < t && i > t-30) || (0))
+                _lines[i][j] = (frame_counter/10);
+            if ((j < t && j > t-30) || (0))
+                _lines[i][j] = (frame_counter/10);
+            //} else {
+            //_lines[i][j] &= _lines[(i|j)%height][(j&i)%width]; 
+            _lines[i][j] &= _lines[(i&j)%height][(j&i)%width];
+            _lines[i][j] = color_scale(_lines[i][j], 134, 206);
+                //_lines[i][j] &= _lines[(i|j)%height][(j^i)%width];
+            //}
             // SYMETRIES
             /*if (i < height/2) {
                 _lines[i][j] = _lines[height - i][j];
@@ -127,13 +150,27 @@ void VSpace::update() {
                 _lines[i][j] = _lines[i][width - j];
             }*/
 
+            if (i > height/2) {
+                _lines[i][j] = _lines[i - height/2][j];
+            }
+
+            if (j > width/2) {
+                _lines[i][j] = _lines[i][j - width/2];
+            }
+
             /*if (_lines[i][j] < 140) {
                 _lines[i][j] = 0;
             }*/
 
             
+            //x = ((float)i/height);
+            //y = ((float)j/width);
             
-            
+            //int i_center = (i - height/2);
+            //int j_center = (j - width/2);
+            //if (j_center != 0) {
+            //_lines[i][j] = 255*sqrt(x*x + y*y);
+            //}
             //set_xy(i, j, (i+j)/30.0f);
             //set_xy(i, j, color_scale(32,32,(x+y)/2));
         }
