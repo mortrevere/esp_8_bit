@@ -69,6 +69,16 @@ void VSpace::update() {
 
     uint8_t t = frame_counter%240;
 
+    //uint8_t t2 = 10+frame_counter%50;
+    //uint8_t t2 = 60-frame_counter%50;
+    uint8_t t2;
+    if(frame_counter%200 < 100) {
+        t2 = frame_counter%100;
+        }
+    else {
+        t2 = 100-frame_counter%100;
+    }
+
     //std::copy(&_lines[0][0], &_lines[0][0]+true_width*true_height,&prev_lines[0][0]);
     
     
@@ -85,12 +95,17 @@ void VSpace::update() {
             //play with +/- i / j for direction
             //0*i / j for hor/vert patterns
 
-            // VERY COOL
+             //VERY COOL
             //_lines[i][j] = color_scale((uint8_t)((i+j+(frame_counter*2)))/(3), 134, 206);
             //_lines[i][j] = color_scale((uint8_t)((i-j+(frame_counter*3)))/(2), 100, 190);
-
-            _lines[i][j] = color_scale((uint8_t)(t*abs(i-j)/(j+1)), 134, 206);
-
+            /*if (abs(i-j) < i) {
+            _lines[i][j] ^= _lines[abs(i-j)][j];
+            }*/
+            //_lines[i][j] = color_scale((uint8_t)(t*(i/10)*abs(i-j)/(j+1)), 134, 206);
+            
+            //COOL
+            //try changing bitwise op
+            //_lines[i][j] = color_scale((i/(t2+1))|(j/(t2+1)), 134, 206);
 
             //set_xy(i, j, color_scale((uint8_t)((i+j+(frame_counter*2)))/(3), 134, 206));
             
@@ -101,13 +116,16 @@ void VSpace::update() {
             //    _lines[i][j] = _lines[abs(i-j)][j];
             //}
 
-            if (i < height/2) {
+            _lines[i][j] = (i+j)/abs(i-j);
+
+            // SYMETRIES
+            /*if (i < height/2) {
                 _lines[i][j] = _lines[height - i][j];
             }
 
             if (j < width/2) {
                 _lines[i][j] = _lines[i][width - j];
-            }
+            }*/
 
             /*if (_lines[i][j] < 140) {
                 _lines[i][j] = 0;
