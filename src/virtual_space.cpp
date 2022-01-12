@@ -43,6 +43,16 @@ int VSpace::color_scale(uint8_t value, uint8_t min, uint8_t max) {
     return map(value, 0, 255, min, max);
     //return min + range*value;
 }
+
+int VSpace::color_cut(uint8_t value, uint8_t cut, uint8_t width = 1) {
+    if(value%cut < width) {
+        return 0;
+    } else {
+        return value;
+    }
+    //return min + range*value;
+}
+
 float InvSqrt(float x){
         float xhalf = 0.5f * x;
         int i = *(int*)&x;            // store floating-point bits in integer
@@ -65,25 +75,32 @@ void VSpace::update() {
             //set_xy(i,j,255*sin(6.18*(start+i)/1000));
         //}
     //}
-    float x,y;
+    //float x,y;
 
-    uint8_t t = (2*frame_counter)%240;
+    //uint8_t t = (2*frame_counter)%240;
 
     //uint8_t t2 = 10+frame_counter%50;
     //uint8_t t2 = 60-frame_counter%50;
-    uint8_t t2;
-    if(frame_counter%200 < 100) {
-        t2 = frame_counter%100;
+    /*int t2;
+    int t2_scale = 60;
+    if(frame_counter%(2*t2_scale) < t2_scale) {
+        t2 = frame_counter%t2_scale;
         }
     else {
-        t2 = 100-frame_counter%100;
+        t2 = frame_counter%t2_scale;
+        //t2 = t2_scale-frame_counter%t2_scale;
     }
+    t2 *= 10;*/
+
+    uint8_t i_half, j_half;
 
     //std::copy(&_lines[0][0], &_lines[0][0]+true_width*true_height,&prev_lines[0][0]);
     
     
     for(int i = 0; i < height; i+=1) {
         for(int j = 0; j < width; j+=1) {
+            //i_half = i;//frame_counter%height;//height/2 - i;
+            //j_half = j;//width/2 - j;
             /*x = (height/2.0) - ((float)i/height);
             y = (width/2.0) - ((float)j/width);
             set_xy(i, j, 16*sqrt((x*x) + (y*y)));*/
@@ -95,17 +112,13 @@ void VSpace::update() {
             //play with +/- i / j for direction
             //0*i / j for hor/vert patterns
 
-             //VERY COOL
-            //_lines[i][j] = color_scale((uint8_t)((i+j+(frame_counter*2)))/(3), 134, 206);
-            //_lines[i][j] = color_scale((uint8_t)((i-j+(frame_counter*3)))/(2), 100, 190);
+             
             /*if (abs(i-j) < i) {
             _lines[i][j] ^= _lines[abs(i-j)][j];
             }*/
             //_lines[i][j] = color_scale((uint8_t)(t*(i/10)*abs(i-j)/(j+1)), 134, 206);
             
-            //COOL
-            //try changing bitwise op
-            //_lines[i][j] = color_scale((i/(t2+1))|(j/(t2+1)), 134, 206);
+            
 
             //set_xy(i, j, color_scale((uint8_t)((i+j+(frame_counter*2)))/(3), 134, 206));
             
@@ -131,32 +144,64 @@ void VSpace::update() {
             //if(i*(t2/10) > j) {
                 //_lines[i][j] = color_scale((i/(t2+1))^(j/(t2+1)), 134, 206);
                 //if (random(0,12) == 0) _lines[i][random(0, width)] = (frame_counter/100); 
+            
+
+            /*
+            //SCANLINES
             if ((i < t && i > t-30) || (0))
                 _lines[i][j] = (frame_counter/10);
             if ((j < t && j > t-30) || (0))
                 _lines[i][j] = (frame_counter/10);
-            //} else {
+            */
+            
+            
             //_lines[i][j] &= _lines[(i|j)%height][(j&i)%width]; 
-            _lines[i][j] &= _lines[(i&j)%height][(j&i)%width];
-            _lines[i][j] = color_scale(_lines[i][j], 134, 206);
-                //_lines[i][j] &= _lines[(i|j)%height][(j^i)%width];
+            //_lines[i][j] &= _lines[(i&j)%height][(j&i)%width];
+            //_lines[i][j] &= _lines[(i|j)%height][(j^i)%width];
+
+            //FULL COLOR SCALE
+            //_lines[i][j] = color_scale(_lines[i][j], 134, 206);
+            
+
+
+            //COOL
+            //try changing bitwise op
+            //_lines[i][j] = color_scale((i/(t2+1))|(j/(t2+1)), 134, 206);
+
+            //VERY COOL
+            //_lines[i][j] = color_cut(color_scale((uint8_t)((i+j+(frame_counter*2)))/(3), 134, 206), 5, 2);
+            //_lines[i][j] = color_scale((uint8_t)((i-j+(frame_counter*3)))/(2), 100, 190);
+            _lines[i][j] = color_scale((uint8_t)((i+j+(frame_counter*2)))/(3), 134, 206);
+            //if (j != 0) {
+                //_lines[i][j] = color_scale((i*j)/(i+j+ 2 + (3*t2)), 134, 206);
+                //_lines[i][j] = color_scale((i*j)/(2 + (3*t2)), 134, 206);
+                //_lines[i][j] = color_cut(color_scale(((i*i)+(t2*t2))/(j), 134, 160), 32, 16);
+                //_lines[i][j] = color_cut(color_scale(((i_half*i_half)+(t2*t2))/(1+j), 134, 160), 32, 16);
+                //_lines[i][j] = color_scale(((i_half*i_half)+(t2*t2))/(1+j), 134, 160);
             //}
             // SYMETRIES
             /*if (i < height/2) {
+                //_lines[i][j] = _lines[i - height/2][j];
                 _lines[i][j] = _lines[height - i][j];
-            }
-
-            if (j < width/2) {
+            }*/
+            
+            /*if (j < width/2) {
+                //_lines[i][j] = _lines[i][j - width/2];
                 _lines[i][j] = _lines[i][width - j];
             }*/
-
-            if (i > height/2) {
-                _lines[i][j] = _lines[i - height/2][j];
+            
+            /*if (i > height/2) {
+                //_lines[i][j] = _lines[i - height/2][j];
+                _lines[i][j] = _lines[height - i][j];
             }
-
+            
             if (j > width/2) {
-                _lines[i][j] = _lines[i][j - width/2];
-            }
+                //_lines[i][j] = _lines[i][j - width/2];
+                 _lines[i][j] = _lines[i][width - j];
+            }*/
+
+
+
 
             /*if (_lines[i][j] < 140) {
                 _lines[i][j] = 0;

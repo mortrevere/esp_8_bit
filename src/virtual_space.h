@@ -28,5 +28,6 @@ public:
     void set_xy(int x, int y, uint8_t value);
     void set_xy(float x, float y, uint8_t value);
     int color_scale(uint8_t value, uint8_t min, uint8_t max);
+    int color_cut(uint8_t value, uint8_t cut, uint8_t width);
     void _state();
 };
