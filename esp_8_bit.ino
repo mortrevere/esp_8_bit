@@ -34,7 +34,7 @@
 #define EMULATOR EMU_ATARI
 
 //  Many emus work fine on a single core (S2), file system access can cause a little flickering
-//  #define SINGLE_CORE
+//#define SINGLE_CORE
 
 // The filesystem should contain folders named for each of the emulators i.e.
 //    atari800
@@ -111,6 +111,7 @@ esp_err_t mount_filesystem()
   vTaskDelay(1);
   printf("... mounted in %d ms\n",millis()-t);
   return e;
+  //return 0;
 }
 
 void setup()

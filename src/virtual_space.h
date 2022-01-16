@@ -8,9 +8,13 @@
 
 class VSpace {
 public:
+    bool double_buf = true;
     uint8_t** _lines;
     uint8_t** prev_lines;
     uint8_t* Screen_atari;
+
+    int VMEM[16] = {0};
+
     int lines_size;
     int true_width;
     int true_height;
@@ -22,12 +26,22 @@ public:
     int w_offset_end = 9;
     int h_offset_end = 2;
     short frame_counter = 0;
+    short _mouv = 0;
     float inv_height, inv_width;
     VSpace(uint8_t** __lines, int w, int h);
+    VSpace(uint8_t** __lines, uint8_t** _prev_lines, int w, int h);
     void update();
     void set_xy(int x, int y, uint8_t value);
     void set_xy(float x, float y, uint8_t value);
     int color_scale(uint8_t value, uint8_t min, uint8_t max);
     int color_cut(uint8_t value, uint8_t cut, uint8_t width);
+
+    //generators
+    void SquareScan(bool fill, bool invert, bool wipe);
+    void TriangleScan(bool fill, bool invert, bool wipe);
+    void LinesField(short, short);
+    void XORField();
+    void SquareInvasion(bool, bool);
+    void Mirrors(bool, bool);
     void _state();
 };

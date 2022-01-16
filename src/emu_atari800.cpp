@@ -22,7 +22,7 @@
 extern "C" {
 #include "atari800/libatari800.h"
 #include "atari800/sound.h"
-#include "atari800/akey.h"
+//#include "atari800/akey.h"
 #include "atari800/memory.h"
 }
 
@@ -567,18 +567,21 @@ Sound_setup_t Sound_desired = {
 
 class EmuAtari800 : public Emu {
     uint8_t** _lines;
+    uint8_t** prev_lines;
     VSpace* _vspace;
+    unsigned int *Screen_atari2;
 public:
 
     //EmuAtari800(int ntsc) : Emu("atari800",384,240,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
     EmuAtari800(int ntsc) : Emu("atari800",384,240,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
     {
         _lines = 0;
+        prev_lines = 0;
         _ext = _atari_ext;
         _help = _atari_help;
 
         init_screen();
-        _vspace = new VSpace(_lines, width, height);
+        _vspace = new VSpace(_lines, prev_lines, width, height);
 
         //Sound_desired.freq = audio_frequency;
     }
@@ -624,18 +627,27 @@ public:
     // allocate most of the big stuff in 32 bit  mem
     void init_screen()
     {
-        Screen_atari = (ULONG*)MALLOC32(Screen_WIDTH*Screen_HEIGHT,"Screen_atari");    // 32 bit access plz
-        MEMORY_mem = (uint8_t*)MALLOC32(64*1024 + 4,"MEMORY_mem");
+        Screen_atari = (unsigned int*)MALLOC32(Screen_WIDTH*Screen_HEIGHT,"Screen_atari");    // 32 bit access plz
+        Screen_atari2 = (unsigned int*)MALLOC32(Screen_WIDTH*Screen_HEIGHT,"Screen_atari2");
+
+        //MEMORY_mem = (uint8_t*)MALLOC32(64*1024 + 4,"MEMORY_mem");
+        MEMORY_mem = (uint8_t*)MALLOC32(64,"MEMORY_mem");
+
         _lines = (uint8_t**)MALLOC32(height*sizeof(uint8_t*),"_lines");
+        prev_lines = (uint8_t**)MALLOC32(height*sizeof(uint8_t*),"prev_lines");
         const uint8_t* s = (uint8_t*)Screen_atari;
+        const uint8_t* s2 = (uint8_t*)Screen_atari2;
         for (int y = 0; y < height; y++) {
             _lines[y] = (uint8_t*)s;
+            prev_lines[y] = (uint8_t*)s2;
+            //std::copy(&_lines[y], &_lines[y]+width,&prev_lines[y]);
             //_lines[y] = (uint8_t*)(127);
             s += width;
+            s2 += width;
         }
-        under_atarixl_os = (uint8_t*)MALLOC32(16*1024,"under_atarixl_os");
-        under_cart809F = (uint8_t*)MALLOC32(8*1024,"under_cart809F");
-        under_cartA0BF = (uint8_t*)MALLOC32(8*1024,"under_cartA0BF");
+        //under_atarixl_os = (uint8_t*)MALLOC32(16*1024,"under_atarixl_os");
+        //under_cart809F = (uint8_t*)MALLOC32(8*1024,"under_cart809F");
+        //under_cartA0BF = (uint8_t*)MALLOC32(8*1024,"under_cartA0BF");
         clear_screen();
     }
 
@@ -644,6 +656,7 @@ public:
         int i = Screen_WIDTH*Screen_HEIGHT/4;
         while (i--)
             Screen_atari[i] = 0;
+            Screen_atari2[i] = 0;
     }
 
     int parse_cfg(const string& str, vector<string>& s, vector<char*>& argv)
@@ -685,23 +698,23 @@ public:
         _vspace = new VSpace(_lines, width, height);*/
 
         // just insert a disk
-        if (((flags & 1) == 0) && (get_ext(path) == "atr")) {
+        /*if (((flags & 1) == 0) && (get_ext(path) == "atr")) {
             printf("inserting %s into drive %d\n",path.c_str(),disk_index+1);
             return libatari800_mount_disk_image(disk_index+1,path.c_str(),false);
-        }
+        }*/
 
         // restarting
         clear_screen();
-        CARTRIDGE_Remove();
-        CASSETTE_Remove();
+        //CARTRIDGE_Remove();
+        //CASSETTE_Remove();
 
-        vector<string> s;
+        /*vector<string> s;
         vector<char*> argv;
         s.push_back("atari800");
         string cfg = get_cfg(path);
         cfg = patch_cfg(cfg,flags);
-        int argc = parse_cfg(cfg,s,argv);
-        libatari800_init(argc,&argv[0]);
+        int argc = parse_cfg(cfg,s,argv);*/
+        //libatari800_init(argc,&argv[0]);
         return 0;
     }
 
@@ -763,7 +776,12 @@ public:
 
     virtual uint8_t** video_buffer()
     {
-        return _lines;
+        //return std::copy(&_lines[0][0], &_lines[0][0]+true_width*true_height,&prev_lines[0][0]);
+        if (_vspace->double_buf) {
+            return prev_lines;
+        } else {
+            return _lines;
+        }
     }
 
     virtual const uint32_t* ntsc_palette()
