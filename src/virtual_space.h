@@ -8,7 +8,7 @@
 
 class VSpace {
 public:
-    bool double_buf = true;
+    bool double_buf = false;
     uint8_t** _lines;
     uint8_t** prev_lines;
     uint8_t* Screen_atari;
@@ -39,9 +39,12 @@ public:
     //generators
     void SquareScan(bool fill, bool invert, bool wipe);
     void TriangleScan(bool fill, bool invert, bool wipe);
+    void NLinesScan(bool, bool, bool);
     void LinesField(short, short);
     void XORField();
     void SquareInvasion(bool, bool);
     void Mirrors(bool, bool);
+    void TestCard();
     void _state();
+    void _reset(bool);
 };

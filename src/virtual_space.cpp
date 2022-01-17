@@ -74,6 +74,33 @@ float InvSqrt(float x){
         return x;
     }
 
+void VSpace::Mirrors(bool vertical = true, bool horizontal = true) {
+    for(int i = 0; i < height; i+=1) {
+        for(int j = 0; j < width; j+=1) {
+    
+    if (i < height/2) {
+        //_lines[i][j] = _lines[i - height/2][j];
+        _lines[i][j] = _lines[height - i][j];
+    }
+            
+    if (j < width/2) {
+        //_lines[i][j] = _lines[i][j - width/2];
+        _lines[i][j] = _lines[i][width - j];
+    }
+
+        }
+    }
+    /*
+    if (i > height/2) {
+        //_lines[i][j] = _lines[i - height/2][j];
+        _lines[i][j] = _lines[height - i][j];
+    }
+            
+    if (j > width/2) {
+        //_lines[i][j] = _lines[i][j - width/2];
+        _lines[i][j] = _lines[i][width - j];
+    }*/
+}
 
 void VSpace::SquareScan(bool fill = true, bool invert = true, bool wipe = false) {
     int w1, w2, h1, h2;
@@ -144,7 +171,56 @@ void VSpace::LinesField(short v_dir = 1, short h_dir = 1) {
     }
 }
 
-void VSpace::SquareInvasion(bool vertical = true, bool horizontal = false) {
+void VSpace::_reset(bool erase) {
+    frame_counter = 0;
+    for(int i = 0; i < 16; i++) {
+        VMEM[i] = 0;
+    }
+    if(erase) {
+        std::fill(&_lines[0][0], &_lines[0][0]+true_height*true_width, 0);
+        //memset(_lines, 0, height*sizeof(uint8_t*));
+        //memset(prev_lines, 0, height*sizeof(uint8_t*));
+    }
+}
+
+void VSpace::NLinesScan(bool vertical = false, bool horizontal = true, bool wipe = false) {
+    uint8_t N = 5;
+    int w_s = width/N;
+    int h_s = height/N;
+    if(VMEM[0] == 0) VMEM[0] = 16*random(0,16) - random(0,6);
+    if(VMEM[1] == 0) VMEM[1] = 16*random(0,16) - random(0,6);
+    
+    for(int i = 0; i < height; i+=1) {
+        for(int j = 0; j < width; j+=1) {
+
+            if(vertical) {
+
+                if((j+(frame_counter%w_s))%w_s == 0) {
+                    _lines[i][j] = VMEM[0];//color_scale(j,100,128);
+                }
+                if(frame_counter%w_s == w_s-1) {
+                    _lines[i][j] = 0;
+                    VMEM[0] = 16*random(0,16) - random(0,6);
+                    _reset(wipe);
+                }
+
+            }
+            if(horizontal) {
+                if((i+(frame_counter%h_s))%h_s == 0) {
+                    _lines[i][j] = VMEM[1];//color_scale(j,100,128);
+                }
+                if(frame_counter%h_s == h_s-1) {
+                    _lines[i][j] = 0;
+                    VMEM[1] = 16*random(0,16) - random(0,6);
+                    _reset(wipe);
+                }
+            }
+    
+        }
+    }
+}
+
+void VSpace::SquareInvasion(bool vertical = true, bool horizontal = true) {
     uint8_t value = 0;
     if(_mouv == 0) {
         VMEM[0] = 16*random(0,16) - random(0,6);
@@ -217,39 +293,57 @@ void VSpace::XORField() {
     }
 }
 
-void VSpace::Mirrors(bool vertical = true, bool horizontal = true) {
-    for(int i = 0; i < height; i+=1) {
-        for(int j = 0; j < width; j+=1) {
-    
-    if (i < height/2) {
-        //_lines[i][j] = _lines[i - height/2][j];
-        _lines[i][j] = _lines[height - i][j];
-    }
-            
-    if (j < width/2) {
-        //_lines[i][j] = _lines[i][j - width/2];
-        _lines[i][j] = _lines[i][width - j];
-    }
+void VSpace::TestCard() {
 
+    /*if(_mouv == 0) {
+        _reset(false);
+    }*/
+
+    unsigned int c = 0;
+        for(int i = 0; i < 128; i+=8) {
+            for(int j = 0; j < 128; j+=8) {
+                for(int k = 0; k < 8; k++) {
+                    for(int l = 0; l < 8; l++) {
+                        _lines[64+i+k][64+j+l] = c;
+                    }
+                }
+                c++;
+            }    
         }
-    }
-    /*
-    if (i > height/2) {
-        //_lines[i][j] = _lines[i - height/2][j];
-        _lines[i][j] = _lines[height - i][j];
-    }
+
+    /*int c = 0;
+
+    for(int i = 0; i < height-16; i+=height/16) {
+        for(int j = 0; j < width-16; j+=width/16) {
+            for(int k = 0; k < height/16; k++) {
+                for(int l = 0; l < width/16; l++) {
+                    if(i+k < height && j+l < width) {
+                        _lines[i+k][j+l] = c;
+                    }
+                }
+            }
+        c++;
+        }
+    }*/
+
+    
+    /*for(int i = 0; i < height; i+=1) {
+        for(int j = 0; j < width; j+=1) {
             
-    if (j > width/2) {
-        //_lines[i][j] = _lines[i][j - width/2];
-        _lines[i][j] = _lines[i][width - j];
+                _lines[i][j] = 15;
+            
+    
+        }
     }*/
 }
 
+
 void VSpace::update() {
     frame_counter++;
-    _mouv = (frame_counter)%10;
-    SquareInvasion();
-    Mirrors();
+    _mouv = 1+ ((frame_counter)%10);
+    //SquareInvasion();
+    TestCard();
+    //Mirrors();
     /*for(int i = 0; i < true_height; i++) {
         for(int j = 0; j < true_width; j++) {
             prev_lines[i][j] = _lines[i][j];
