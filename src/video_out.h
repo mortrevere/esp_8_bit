@@ -332,7 +332,7 @@ static int usec(float us)
 
 #define PAL_COLOR_CLOCKS_PER_SCANLINE 284        // really 283.75 ?
 #define PAL_FREQUENCY 4433618.75
-#define PAL_LINES 312
+#define PAL_LINES 312 //330 works too
 
 void pal_init();
 
@@ -566,9 +566,13 @@ void IRAM_ATTR blit(uint8_t* src, uint16_t* dst)
             // AA AA
             // 192 color clocks wide
             // only show 336 pixels
-            src += 24;
-            d += 16;
-            for (i = 0; i < (384-48); i += 4) {
+
+            //============================
+            //LEO : show all screen
+            //src += 24;
+            //d += 16;
+            //for (i = 0; i < (384-48); i += 4) {
+            for (i = 0; i < (384); i += 4) {
                 uint32_t c = *((uint32_t*)src); // screen may be in 32 bit mem
                 d[0] = p[(uint8_t)c];
                 d[1] = p[(uint8_t)(c>>8)] << 8;
