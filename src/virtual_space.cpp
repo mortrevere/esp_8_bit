@@ -1,4 +1,8 @@
 #include "virtual_space.h"
+#include <Arduino.h>
+#include <algorithm>
+#include <iterator>
+
 
 extern "C"
 void* MALLOC32(int size, const char* name);
@@ -165,7 +169,7 @@ void VSpace::LinesField(short v_dir = 1, short h_dir = 1) {
     uint8_t value = 0;
     for(int i = 0; i < height; i+=1) {
         for(int j = 0; j < width; j+=1) {
-            value = ((v_dir*i)+(h_dir*j)+(frame_counter))/2;
+            value = ((v_dir*i)+(h_dir*j)+(frame_counter*(1+(10*VINPUTS[2]/4096))))/2;
             _lines[i][j] = color_scale(value, 134, 160);
         }
     }
@@ -183,7 +187,7 @@ void VSpace::_reset(bool erase) {
     }
 }
 
-void VSpace::NLinesScan(bool vertical = false, bool horizontal = true, bool wipe = false) {
+void VSpace::NLinesScan(bool vertical = true, bool horizontal = false, bool wipe = false) {
     uint8_t N = 5;
     int w_s = width/N;
     int h_s = height/N;
@@ -296,53 +300,125 @@ void VSpace::XORField() {
 void VSpace::TestCard() {
 
     /*if(_mouv == 0) {
+        int p = VMEM[5];
         _reset(false);
-    }*/
+        VMEM[5] = p+1;
+    }
+
+    if(VMEM[5] > 10) {
+        _reset(true);
+    }
+
+    if (!VMEM[0]) {
+        VMEM[0] = random(0, height);
+        VMEM[1] = random(0, width);
+        VMEM[4] = random(0,15);
+        VMEM[2] = VMEM[4]*random(-1, 1);
+        VMEM[3] = VMEM[4]*random(-1, 1);
+        VMEM[6] = 15;
+    }
+    for(int i = 0; i < height; i+=1) {
+        for(int j = 0; j < width; j+=1) {
+            if ((i > VMEM[0] && i < (VMEM[0]+50) && j > VMEM[1] && j < (VMEM[1] + 50))) {
+                if(_lines[i][j] == 0) {
+                    _lines[i][j] = VMEM[6];
+                } else {
+                    _lines[i][j] ^= VMEM[6];
+                }
+            }
+        
+        }
+    }
+    VMEM[0] += VMEM[2];
+    VMEM[1] += VMEM[3];*/
+    
+
+
 
     unsigned int c = 0;
         for(int i = 0; i < 128; i+=8) {
             for(int j = 0; j < 128; j+=8) {
                 for(int k = 0; k < 8; k++) {
                     for(int l = 0; l < 8; l++) {
-                        _lines[64+i+k][64+j+l] = c;
+                        //_lines[64+i+k][64+j+l] = c;
+                        _lines[i+k][j+l] = c;
                     }
                 }
                 c++;
             }    
         }
 
-    /*int c = 0;
+}
 
-    for(int i = 0; i < height-16; i+=height/16) {
-        for(int j = 0; j < width-16; j+=width/16) {
-            for(int k = 0; k < height/16; k++) {
-                for(int l = 0; l < width/16; l++) {
-                    if(i+k < height && j+l < width) {
-                        _lines[i+k][j+l] = c;
-                    }
-                }
-            }
-        c++;
-        }
-    }*/
-
-    
-    /*for(int i = 0; i < height; i+=1) {
+void VSpace::Linez() {
+    int offset = 100*VINPUTS[1]/4096;
+    int n_lines = 100*VINPUTS[1]/4096;
+    for(int i = 0; i < height; i+=1) {
         for(int j = 0; j < width; j+=1) {
-            
-                _lines[i][j] = 15;
-            
+    //for(int j = 0; j < width; j+=1) {
+    //    for(int i = 0; i < height; i+=1) {
     
+            //if((j+frame_counter)%(n_lines*2) < n_lines && !((i+frame_counter)%(n_lines*2) < n_lines)) {
+            if((j+(frame_counter*(1 + (25*VINPUTS[2]/4096))))%(n_lines*2) < n_lines) {
+                _lines[i][j] = 256*VINPUTS[2]/4096;
+            } else {
+                _lines[i][j] = 0;
+            }
         }
+    }
+}
+
+void VSpace::get_inputs() {
+    /*VINPUTS[2] = (VINPUTS[2] + analogRead(36))/2;
+    VINPUTS[1] = analogRead(39);
+    VINPUTS[3] = analogRead(34);*/
+
+    for(int i = 0; i < 14; i++) {
+    int value = analogRead(PIN_INPUTS[i]);
+    if(frame_counter%100 == 0) {
+    printf("%d %d\n", i, value);
+    
+    }
+
+    
+  }
+
+  if(frame_counter%100 == 0) printf("\n");
+
+   VINPUTS[1] = 1320;
+/*
+    for(int i = 1; i <= 3; i++) {
+        VINPUTS[i] = (VINPUTS[i] + analogRead(PIN_INPUTS[i]))/2;
+    }
+
+    VINPUTS[1] = 1320;
+
+
+    if(frame_counter%100 == 0) {
+
+    for(int i = 1; i <= 3; i++) {
+        printf("VINPUT %d = %d\n", i, VINPUTS[i]);
+    }
+    //if(VINPUTS[3] > 2048) {
+    double_buf = (VINPUTS[3] > 2048); 
+    //} else 
+    printf("\n");
+
     }*/
 }
 
 
 void VSpace::update() {
+    //if (frame_counter%10 == 0) {
+        get_inputs();
+    //}
     frame_counter++;
-    _mouv = 1+ ((frame_counter)%10);
-    //SquareInvasion();
-    TestCard();
+    _mouv = ((frame_counter)%100);
+    //NLinesScan();
+    //SquareScan();
+    //Linez();
+    SquareInvasion();
+    //TestCard();
     //Mirrors();
     /*for(int i = 0; i < true_height; i++) {
         for(int j = 0; j < true_width; j++) {

@@ -2,18 +2,21 @@
 #include "stdio.h"
 #include "stdint.h"
 #include "math.h"
-#include <Arduino.h>
-#include <algorithm>
-#include <iterator>
+
+#ifndef vspace_hpp
+#define vspace_hpp
 
 class VSpace {
 public:
-    bool double_buf = false;
+    bool double_buf = true;
     uint8_t** _lines;
     uint8_t** prev_lines;
     uint8_t* Screen_atari;
 
+    int PIN_INPUTS[14] =  {36, 39, 34, 35, 32, 33, 26, 27, 14, 12, 13, 4, 2, 15};
     int VMEM[16] = {0};
+    int VINPUTS[32] = {1};
+    void get_inputs();
 
     int lines_size;
     int true_width;
@@ -44,7 +47,10 @@ public:
     void XORField();
     void SquareInvasion(bool, bool);
     void Mirrors(bool, bool);
+    void Linez();
     void TestCard();
     void _state();
     void _reset(bool);
 };
+
+#endif /* emu_hpp */
