@@ -505,8 +505,11 @@ extern "C" void CARTRIDGE_Remove();
 extern "C" void CASSETTE_Remove();
 
 extern ULONG *Screen_atari;
+/*#define Screen_WIDTH  384
+#define Screen_HEIGHT 240*/
+
 #define Screen_WIDTH  384
-#define Screen_HEIGHT 240
+#define Screen_HEIGHT 270
 
 const char* _atari_help[] = {
     "1 or 2 inserts .atr into drive #",
@@ -568,12 +571,12 @@ Sound_setup_t Sound_desired = {
 class EmuAtari800 : public Emu {
     uint8_t** _lines;
     uint8_t** prev_lines;
-    VSpace* _vspace;
     unsigned int *Screen_atari2;
+    
 public:
-
+    VSpace* _vspace;
     //EmuAtari800(int ntsc) : Emu("atari800",384,240,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
-    EmuAtari800(int ntsc) : Emu("atari800",384,240,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
+    EmuAtari800(int ntsc) : Emu("atari800",Screen_WIDTH,Screen_HEIGHT,ntsc,(16 | (1 << 8)),4,EMU_ATARI)
     {
         _lines = 0;
         prev_lines = 0;
@@ -722,6 +725,7 @@ public:
 
     virtual int update()
     {
+
         /*_frame_counter++;
 
         for(int i = 0; i < height; i++) {
@@ -776,6 +780,7 @@ public:
 
     virtual uint8_t** video_buffer()
     {
+        
         //return std::copy(&_lines[0][0], &_lines[0][0]+true_width*true_height,&prev_lines[0][0]);
         if (_vspace->double_buf) {
             return prev_lines;

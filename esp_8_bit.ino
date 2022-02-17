@@ -1,4 +1,3 @@
-
 /* Copyright (c) 2020, Peter Barrett
 **
 ** Permission to use, copy, modify, and/or distribute this software for
@@ -19,7 +18,7 @@
 #include "esp_int_wdt.h"
 #include "esp_spiffs.h"
 
-#define PERF  // some stats about where we spend our time
+//#define PERF  // some stats about where we spend our time
 #include "src/emu.h"
 #include "src/video_out.h"
 
@@ -28,7 +27,7 @@
 // Supports NTSC/PAL composite video, Bluetooth Classic keyboards and joysticks
 
 //  Choose one of the video standards: PAL,NTSC
-#define VIDEO_STANDARD NTSC
+#define VIDEO_STANDARD PAL
 
 //  Choose one of the following emulators: EMU_NES,EMU_SMS,EMU_ATARI
 #define EMULATOR EMU_ATARI
@@ -65,8 +64,8 @@ bool _inited = false;
 
 void emu_init()
 {
-    std::string folder = "/" + _emu->name;
-    gui_start(_emu,folder.c_str());
+    //std::string folder = "/" + _emu->name;
+    //gui_start(_emu,folder.c_str());
     _drawn = _frame_counter;
 }
 
@@ -79,7 +78,8 @@ void emu_loop()
     // Draw a frame, update sound, process hid events
     uint32_t t = xthal_get_ccount();
     //gen();
-    gui_update();
+    _emu->update();
+    //gui_update();
     _frame_time = xthal_get_ccount() - t;
     _lines = _emu->video_buffer();
     _drawn++;
@@ -157,6 +157,7 @@ void loop()
   #ifdef SINGLE_CORE
   emu_loop();
   #else
+  
   // start the video after emu has started
   if (!_inited) {
     if (_lines) {

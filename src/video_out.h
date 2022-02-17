@@ -332,7 +332,8 @@ static int usec(float us)
 
 #define PAL_COLOR_CLOCKS_PER_SCANLINE 284        // really 283.75 ?
 #define PAL_FREQUENCY 4433618.75
-#define PAL_LINES 312 //330 works too
+//#define PAL_LINES 312 //330 works too
+#define PAL_LINES 338 //330, 344 works too
 
 void pal_init();
 
@@ -355,7 +356,7 @@ void video_init(int samples_per_cc, int machine, const uint32_t* palette, int nt
         _pal_ = 1;
     }
     
-    _active_lines = 240;
+    _active_lines = 270; //LEO : original was 240
     video_init_hw(_line_width,_samples_per_cc);    // init the hardware
 }
 
@@ -404,7 +405,8 @@ void IRAM_ATTR blit_pal(uint8_t* src, uint16_t* dst)
             // pal is 5/4 wider than ntsc to account for pal 288 color clocks per line vs 228 in ntsc
             // so do an ugly stretch on pixels (actually luma) to accomodate -> 384 pixels are now 240 pal color clocks wide
             left = 24;
-            right = 384-24; // only show center 336 pixels
+            //right = 384-24; // only show center 336 pixels
+            right = 384; // only show center 336 pixels -> show all pixels
             dst += 40;
             for (int i = left; i < right; i += 4) {
                 c = *((uint32_t*)(src+i));
@@ -808,15 +810,18 @@ void IRAM_ATTR video_isr(volatile void* vbuf)
     uint16_t* buf = (uint16_t*)vbuf;
     if (_pal_) {
         // pal
-        if (i < 32) {
+        int v_offset = 32;
+        if (i < v_offset) {
             blanking(buf,false);                // pre render/black 0-32
-        } else if (i < _active_lines + 32) {    // active video 32-272
+        } else if (i < _active_lines + v_offset) {    // active video 32-272
             sync(buf,_hsync);
             burst(buf);
-            blit(_lines[i-32],buf + _active_start);
-        } else if (i < 304) {                   // post render/black 272-304
-            if (i < 272)                        // slight optimization here, once you have 2 blanking buffers
-                blanking(buf,false);
+            blit(_lines[i-v_offset],buf + _active_start);
+        //} else if (i < 304) {                //LEO : original was 304   // post render/black 272-304
+        } else if (i < PAL_LINES-8) {                //LEO : original was 304   // post render/black 272-304
+            //if (i < 272)
+            //if (i < 272)                        // slight optimization here, once you have 2 blanking buffers
+            blanking(buf,false);
         } else {
             pal_sync(buf,i);                    // 8 lines of sync 304-312
         }
