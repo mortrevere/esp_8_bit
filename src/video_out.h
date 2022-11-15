@@ -332,8 +332,8 @@ static int usec(float us)
 
 #define PAL_COLOR_CLOCKS_PER_SCANLINE 284        // really 283.75 ?
 #define PAL_FREQUENCY 4433618.75
-//#define PAL_LINES 312 //330 works too
-#define PAL_LINES 338 //330, 344 works too
+#define PAL_LINES 312 //330 works too
+//#define PAL_LINES 338 //330, 344 works too
 
 void pal_init();
 
@@ -356,7 +356,8 @@ void video_init(int samples_per_cc, int machine, const uint32_t* palette, int nt
         _pal_ = 1;
     }
     
-    _active_lines = 270; //LEO : original was 240
+    //_active_lines = 270; //LEO : original was 240
+    _active_lines = 240; //LEO : original was 240
     video_init_hw(_line_width,_samples_per_cc);    // init the hardware
 }
 

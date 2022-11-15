@@ -60,9 +60,12 @@ int VSpace::color_scale(uint8_t value, uint8_t min, uint8_t max)
 
 int VSpace::color_cut(uint8_t value, uint8_t cut, uint8_t width = 1)
 {
+    if (cut == 0) {
+        return value;
+    }
     if (value % cut < width)
     {
-        return 0;
+        return 255-value;
     }
     else
     {
@@ -115,11 +118,12 @@ void VSpace::Mirrors(bool vertical = true, bool horizontal = true)
 
 void VSpace::SquareScan(bool fill = true, bool invert = true, bool wipe = false)
 {
+    _time_loop = map(_time_loop, 0, _time_loop_period, 0, 50);
     int w1, w2, h1, h2;
-    w1 = width / 2 - _mouv;
-    w2 = width / 2 + _mouv;
-    h1 = height / 2 - _mouv;
-    h2 = height / 2 + _mouv;
+    w1 = width / 2 - _time_loop;
+    w2 = width / 2 + _time_loop;
+    h1 = height / 2 - _time_loop;
+    h2 = height / 2 + _time_loop;
     for (int i = 0; i < height; i += 1)
     {
         for (int j = 0; j < width; j += 1)
@@ -132,10 +136,11 @@ void VSpace::SquareScan(bool fill = true, bool invert = true, bool wipe = false)
                 fill && ((!invert && (j < w2 && j > w1 && i < h2 && i > h1)) ||
                          (invert && !(j < w2 && j > w1 && i < h2 && i > h1))))
             {
-                _lines[i][j] = color_scale(frame_counter % 256, 134, 206);
+                //_lines[i][j] = color_scale(_time_loop % 256, 134, 206);
+                _lines[i][j] = color_cut(color_scale(_time_loop % 256, _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
                 //_lines[i][j] = 15+(16*(frame_counter%16));
             }
-            else if (wipe || _mouv == 0)
+            else if (wipe || _time_loop == 0)
             {
                 _lines[i][j] = 0;
             }
@@ -145,10 +150,14 @@ void VSpace::SquareScan(bool fill = true, bool invert = true, bool wipe = false)
 
 void VSpace::TriangleScan(bool fill = false, bool invert = false, bool wipe = false)
 {
+    _time_loop = map(_time_loop, 0, _time_loop_period, 0, 50);
+    fill = _preset_switch1;
+    wipe = _preset_switch2;
+    invert = _slit_mode;
     int a, b, c;
-    a = height / 2 + _mouv;
-    b = (width + height) / 2 - _mouv;
-    c = (width - height) / 2 + _mouv;
+    a = height / 2 + _time_loop;
+    b = (width + height) / 2 - _time_loop;
+    c = (width - height) / 2 + _time_loop;
     // h2 = height/2 + _mouv;
     for (int i = 0; i < height; i += 1)
     {
@@ -163,10 +172,11 @@ void VSpace::TriangleScan(bool fill = false, bool invert = false, bool wipe = fa
                 fill && ((!invert && (i < a && i + j > b && j - i < c)) ||
                          (invert && !(i < a && i + j > b && j - i < c))))
             {
-                _lines[i][j] = color_scale(frame_counter % 256, 134, 206);
+                //_lines[i][j] = color_scale(frame_counter % 256, 134, 206);
+                _lines[i][j] = color_cut(color_scale(frame_counter % 256, _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
                 //_lines[i][j] = 15+(16*(frame_counter%16));
             }
-            else if (wipe || _mouv == 0)
+            else if (wipe || _time_loop == 0)
             {
                 _lines[i][j] = 0;
                 //_lines[i][j] &= prev_lines[abs(i-j)%height][abs(j-j)%width];
@@ -182,15 +192,15 @@ void VSpace::LinesField(short v_dir = 1, short h_dir = 1)
     {
         for (int j = 0; j < width; j += 1)
         {
-            value = ((v_dir * i) + (h_dir * j) + (frame_counter * (1 + (10 * VINPUTS[2] / 4096)))) / 2;
-            _lines[i][j] = color_scale(value, 134, 160);
+            value = ((v_dir * i) + (h_dir * j) + (_time_loop)) / 2;
+            _lines[i][j] = color_cut(color_scale(value, _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
         }
     }
 }
 
 void VSpace::_reset(bool erase)
 {
-    frame_counter = 0;
+    //frame_counter = 0;
     for (int i = 0; i < 16; i++)
     {
         VMEM[i] = 0;
@@ -205,13 +215,19 @@ void VSpace::_reset(bool erase)
 
 void VSpace::NLinesScan(bool vertical = true, bool horizontal = false, bool wipe = false)
 {
-    uint8_t N = 5;
+    vertical = _preset_switch1;
+    horizontal = _preset_switch2;
+    //wipe = _preset_switch1 == 2 || _preset_switch2 == 2;
+    uint8_t N = map(_preset_pot, 0, 4096, 1, 20);
+
     int w_s = width / N;
     int h_s = height / N;
     if (VMEM[0] == 0)
-        VMEM[0] = 16 * random(0, 16) - random(0, 6);
+        VMEM[0] = random(0,256);
+        VMEM[0] = color_cut(color_scale(VMEM[0], _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
     if (VMEM[1] == 0)
-        VMEM[1] = 16 * random(0, 16) - random(0, 6);
+        VMEM[1] = random(0,256);
+        VMEM[1] = color_cut(color_scale(VMEM[1], _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
 
     for (int i = 0; i < height; i += 1)
     {
@@ -225,10 +241,12 @@ void VSpace::NLinesScan(bool vertical = true, bool horizontal = false, bool wipe
                 {
                     _lines[i][j] = VMEM[0]; // color_scale(j,100,128);
                 }
-                if (frame_counter % w_s == w_s - 1)
+                if (_time_loop % w_s == w_s - 1)
                 {
                     _lines[i][j] = 0;
-                    VMEM[0] = 16 * random(0, 16) - random(0, 6);
+                    VMEM[0] = random(0,256); //16 * random(0, 16) - random(0, 6);
+                    VMEM[0] = color_cut(color_scale(VMEM[0], _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
+                    _time_loop = 0;
                     _reset(wipe);
                 }
             }
@@ -238,11 +256,13 @@ void VSpace::NLinesScan(bool vertical = true, bool horizontal = false, bool wipe
                 {
                     _lines[i][j] = VMEM[1]; // color_scale(j,100,128);
                 }
-                if (frame_counter % h_s == h_s - 1)
+                if (_time_loop % h_s == h_s - 1)
                 {
                     _lines[i][j] = 0;
-                    VMEM[1] = 16 * random(0, 16) - random(0, 6);
+                    VMEM[1] = random(0,256); //16 * random(0, 16) - random(0, 6);
+                    VMEM[1] = color_cut(color_scale(VMEM[1], _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
                     _reset(wipe);
+                    _time_loop = 0;
                 }
             }
         }
@@ -252,9 +272,10 @@ void VSpace::NLinesScan(bool vertical = true, bool horizontal = false, bool wipe
 void VSpace::SquareInvasion(bool vertical = true, bool horizontal = true)
 {
     uint8_t value = 0;
-    if (_mouv == 0)
+    if (_time_loop == 0)
     {
-        VMEM[0] = 16 * random(0, 16) - random(0, 6);
+        //VMEM[0] = 16 * random(0, 16) - random(0, 6);
+        VMEM[0] = color_cut(color_scale(random(0,256), _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
         VMEM[1] = random(0, width);
         VMEM[2] = random(VMEM[1], width);
         VMEM[3] = random(0, height);
@@ -306,7 +327,7 @@ void VSpace::SquareInvasion(bool vertical = true, bool horizontal = true)
 void VSpace::XORField()
 {
     int a = 0;
-    if (_mouv == 0)
+    if (_time_loop == 0)
     {
         VMEM[0] = 16 * random(0, 16) - random(0, 8);
     }
@@ -323,11 +344,11 @@ void VSpace::XORField()
                 _lines[i][j] ^= prev_lines[abs(i&j)%height][abs(i|j)%width];
             }*/
 
-            if ((i ^ j) == _mouv)
+            if ((i ^ j) == _time_loop)
             {
                 _lines[i][j] = VMEM[0];
             }
-            else if (_mouv == 0)
+            else if (_time_loop == 0)
             {
                 _lines[i][j] = 0;
             }
@@ -397,81 +418,310 @@ void VSpace::TestCard()
 
 void VSpace::Linez()
 {
-    int offset = 100 * VINPUTS[1] / 4096;
-    int n_lines = 100 * VINPUTS[1] / 4096;
+    /*int offset = 100 * VINPUTS[1] / 4096;
+    int n_lines = 100 * VINPUTS[1] / 4096;*/
+
+    int n_lines = map(_preset_pot, 0, 4096, 50, 4);
     for (int i = 0; i < height; i += 1)
     {
         for (int j = 0; j < width; j += 1)
         {
-            // for(int j = 0; j < width; j+=1) {
-            //     for(int i = 0; i < height; i+=1) {
 
-            // if((j+frame_counter)%(n_lines*2) < n_lines && !((i+frame_counter)%(n_lines*2) < n_lines)) {
-            if ((j + (frame_counter * (1 + (25 * VINPUTS[2] / 4096)))) % (n_lines * 2) < n_lines)
+            int j_check = (j + _time_loop) % (n_lines * 2);
+            int i_check = (i + _time_loop) % (n_lines * 2);
+            /*if(
+                (
+                    (_preset_switch1 == 1) && (j+frame_counter)%(n_lines*2) < n_lines
+                )
+                &&
+                !((i+frame_counter)%(n_lines*2) < n_lines))*/
+            if (_preset_switch1 | _preset_switch2 == 1)
+            //if (_preset_switch1 == 1 || _preset_switch2 == 1)
             {
-                _lines[i][j] = 256 * VINPUTS[2] / 4096;
+                if (
+                    ((_preset_switch1 != 0) && j_check < n_lines) ||
+                    ((_preset_switch2 != 0) && i_check < n_lines))
+                {
+                    _lines[i][j] = _color_select_start;
+                }
+                else
+                {
+                    _lines[i][j] = 0;
+                }
             }
-            else
+            /*
+            if ((_preset_switch1 == 2) || (_preset_switch2 == 2))
             {
-                _lines[i][j] = 0;
+                if (
+                    ((_preset_switch1 != 0) && j_check == 0) ||
+                    ((_preset_switch2 != 0) && i_check == 0))
+                {
+                    _lines[i][j] = 255;
+                }
+                else
+                {
+                    _lines[i][j] -= 1;
+                }
+            }*/
+
+            /*if (_lines[i][j] != 0)
+                _lines[i][j] = color_scale(_lines[i][j], _color_select_start, _color_select_end);*/
+        }
+    }
+}
+
+
+void VSpace::Linez2()
+{
+    int n_lines = 4*map(_preset_pot, 0, 4096, 50, 4);
+    int w_lines = 2*map(_slit_index, 0, 4096, 0, 50) + 1;
+    for (int i = 0; i < height; i += 1)
+    {
+        for (int j = 0; j < width; j += 1)
+        {
+
+            int j_check = (j + _time_loop) % (n_lines * 2);
+            int i_check = (i + _time_loop) % (n_lines * 2);
+            
+            
+            //if ((_preset_switch1 == 1) || (_preset_switch2 == 1))
+            if ((_preset_switch1) || (_preset_switch2))
+            {
+                if (
+                    ((_preset_switch1 == 1) && j_check < w_lines) ||
+                    ((_preset_switch2 == 1) && i_check < w_lines))
+                {
+                    _lines[i][j] = _color_select_start; //color_scale(_lines[i][j], _color_select_start, _color_select_end);;
+                }
+                else
+                {
+                    //_lines[i][j] -= 1;
+                    _lines[i][j] = color_cut(color_scale(_lines[i][j] - 1, _color_select_start, _color_select_end), _color_cut_period, _color_cut_width);
+                }
             }
+
+            //if (_lines[i][j] != 0)
+            //    _lines[i][j] = color_scale(_lines[i][j], _color_select_start, _color_select_end);
         }
     }
 }
 
 void VSpace::get_inputs()
 {
-    /*VINPUTS[2] = (VINPUTS[2] + analogRead(36))/2;
-    VINPUTS[1] = analogRead(39);
-    VINPUTS[3] = analogRead(34);*/
 
     for (int i = 0; i < N_INPUTS; i++)
     {
-        int value = analogRead(PIN_INPUTS[i]);
-        if (frame_counter % 100 == 0)
+        // VINPUTS[i] = (9*VINPUTS[i] + analogRead(PIN_INPUTS[i]))/10;
+        VINPUTS[i] = analogRead(PIN_INPUTS[i]);
+        /*if (frame_counter % 100 == 0)
         {
-            printf("%d %d\n", i, value);
+            printf("%d %d\n", i, VINPUTS[i]);
+        }*/
+    }
+
+    _buttons = map(VINPUTS[0], 0, 4096, 0, 16); // all buttons
+    // preset next : 5
+    // preset prev : 10
+    // white : 6 
+    // black : 14
+
+    if(_buttons == 5 && (frame_counter - _last_preset_switch) > 10) {
+        _current_preset++;
+        _last_preset_switch = frame_counter;
+    } else if (_buttons == 10 && (frame_counter - _last_preset_switch) > 10) {
+        _current_preset--;
+        _last_preset_switch = frame_counter;
+    }
+
+    _preset_pot = 4095 - VINPUTS[6];                  // by preset
+    _preset_switch1 = map(VINPUTS[3], 0, 4096, 0, 2); // tri switch
+    _preset_switch2 = map(VINPUTS[2], 0, 4096, 0, 2); // tri switch
+
+    
+
+    //white button is pressed
+    if(_buttons == 6) {
+        _color_select_start = map(4095 - VINPUTS[10], 0, 4096, 0, 255); // 0 - 256
+        _color_select_range = map(4095 - VINPUTS[12], 0, 4096, 0, 255); // 0 - 256
+        _color_select_end = _color_select_start + _color_select_range;
+        if (_color_select_end > 256) {
+            _color_select_end = 255;
+            _color_select_range = 255 - _color_select_start;
         }
     }
 
-    if (frame_counter % 100 == 0)
-        printf("\n");
+    _color_cut_period = map(4095 - VINPUTS[13], 0, 4096, 0, _color_select_range); // 0 - 256
+    _color_cut_width = map(4095 - VINPUTS[11], 0, 4096, 0, _color_cut_period);  // 0 - _color_cut_period
 
-    VINPUTS[1] = 1320;
+    _time_loop_multiplier = map(4095 - VINPUTS[7], 0, 4096, 1, 10); // TBD
+    if(_buttons == 14) {
+    if (VINPUTS[8] == 0) {
+        _time_loop_period = INT_MAX;
+    } else {
+        _time_loop_period = map(VINPUTS[8], 4096, 0, 2, 1000);
+    }
     /*
-        for(int i = 1; i <= 3; i++) {
-            VINPUTS[i] = (VINPUTS[i] + analogRead(PIN_INPUTS[i]))/2;
+    if (VINPUTS[8] < 4090)
+    {
+        _time_loop_period = 2 + (4095 - VINPUTS[8]); // 2 - TBD
+    }
+    else
+    {
+        _time_loop_period = INT_MAX;
+    }*/
+    }
+
+                 // 0 - (width/height)
+    _slit_mode = map(VINPUTS[4], 0, 4096, 0, 2); // tri switch
+
+    if(_slit_mode == 1) {
+        if (2*_time_loop < _time_loop_period) {
+            _slit_index = VINPUTS[9];
+        } else {
+            _slit_index = 4095 - VINPUTS[9];
         }
+    } else if (_slit_mode == 2) {
 
-        VINPUTS[1] = 1320;
+    } else {
+        _slit_index = 4095 - VINPUTS[9];
+    }
 
+    _sym_vertical = map(VINPUTS[1], 0, 4096, 0, 2);   // tri switch
+    _sym_horizontal = map(VINPUTS[5], 0, 4096, 0, 2); // tri switch
 
-        if(frame_counter%100 == 0) {
+    
 
-        for(int i = 1; i <= 3; i++) {
-            printf("VINPUT %d = %d\n", i, VINPUTS[i]);
-        }
-        //if(VINPUTS[3] > 2048) {
-        double_buf = (VINPUTS[3] > 2048);
-        //} else
-        printf("\n");
+    if (frame_counter % 100 == 0)
+    {
+        printf("_preset_pot : %d\n", _preset_pot);
+        printf("_preset_switch1 : %d\n", _preset_switch1);
+        printf("_preset_switch2 : %d\n\n", _preset_switch2);
 
-        }*/
+        printf("_color_cut_period : %d\n", _color_cut_period);
+        printf("_color_cut_width : %d\n\n", _color_cut_width);
+
+        printf("_color_select_start : %d\n", _color_select_start);
+        printf("_color_select_range : %d\n\n", _color_select_range);
+
+        printf("_time_loop_multiplier : %d\n", _time_loop_multiplier);
+        printf("_time_loop_period : %d\n\n", _time_loop_period);
+
+        printf("_slit_index : %d\n", _slit_index);
+        printf("_slit_mode : %d\n\n", _slit_mode);
+
+        printf("_sym_vertical : %d\n", _sym_vertical);
+        printf("_sym_horizontal : %d\n\n", _sym_horizontal);
+
+        printf("_buttons : %d\n", _buttons);
+    }
 }
 
 void VSpace::update()
 {
-    // if (frame_counter%10 == 0) {
     get_inputs();
-    //}
     frame_counter++;
-    _mouv = ((frame_counter) % 100);
+    _time_loop = ((frame_counter * _time_loop_multiplier) % (2 + _time_loop_period));
+    
+    if (_sym_vertical) {
+        //double_buf = true;
+        true_width = width;
+        width = width/2 + 2 ;
+    }
+    if (_sym_horizontal) {
+        //double_buf = true;
+        true_height = height;
+        height = height/2 + 2;
+    }
+
+    switch (_current_preset%N_PRESETS) {
+        case 0:
+            LinesField();
+            break;
+        case 1:
+            Linez2();
+            break;
+        case 2:
+            NLinesScan();
+            break;
+        case 3:
+            SquareScan();
+            break;
+        case 4:
+            TriangleScan();
+            break;
+        case 5:
+            SquareInvasion();
+            break;
+        default:
+            TestCard();
+    }
+
+    
     // NLinesScan();
     // SquareScan();
-    // Linez();
-    SquareInvasion();
-    // TestCard();
-    // Mirrors();
+    //Linez();
+    
+    
+    //TestCard
+
+    if (_sym_vertical) {
+        width = true_width;
+        for (int i = 0; i < height; i += 1)
+        {
+            for (int j = width/2; j <= width; j += 1)
+            {
+                _lines[i][j] = _lines[i][width - j];
+            }
+        }
+    }
+
+    if (_sym_horizontal) {   
+        height = true_height;
+        for (int i = height/2; i <= height; i += 1)
+        {
+            for (int j = 0; j < width; j += 1)
+            {
+                _lines[i][j] = _lines[height-i][j];
+            }
+        }
+    }
+
+    /*if(_slit_mode == 1) {  // horizontal
+        double_buf = true;
+        int __slit_index = map(_slit_index, 0, 4096, 0, height);
+        for (int i = 0; i < height; i += 1)
+        {
+            if (i != __slit_index) {
+                for (int j = 0; j < width; j += 1)
+                {
+                    _lines[i][j] = _lines[__slit_index][j];
+                }
+            }
+            
+        }
+    }
+
+    if(_slit_mode == 2) {  // vertical
+        double_buf = true;
+        int __slit_index = map(_slit_index, 0, 4096, 0, width);
+        for (int j = 0; j < width; j += 1)
+        {
+            if (j != __slit_index) {
+                for (int i = 0; i < height; i += 1)
+                {
+                    _lines[i][j] = _lines[i][__slit_index];
+                }
+            }
+            
+        }
+    }*/
+
+    if(_slit_mode == 0) {
+        double_buf = false;
+    }
+    // SquareInvasion();
+    //  TestCard();
+    //  Mirrors();
     /*for(int i = 0; i < true_height; i++) {
         for(int j = 0; j < true_width; j++) {
             prev_lines[i][j] = _lines[i][j];

@@ -509,7 +509,8 @@ extern ULONG *Screen_atari;
 #define Screen_HEIGHT 240*/
 
 #define Screen_WIDTH  384
-#define Screen_HEIGHT 270
+#define Screen_HEIGHT 240
+//#define Screen_HEIGHT 270
 
 const char* _atari_help[] = {
     "1 or 2 inserts .atr into drive #",

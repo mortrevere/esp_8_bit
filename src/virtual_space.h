@@ -7,18 +7,47 @@
 #define vspace_hpp
 
 #define N_INPUTS 14
+#define N_PRESETS 6
 
 class VSpace
 {
 public:
-    bool double_buf = true;
+    bool double_buf = false;
     uint8_t **_lines;
     uint8_t **prev_lines;
     uint8_t *Screen_atari;
 
+    int _current_preset = 0;
+    int _last_preset_switch = 0;
+
     int PIN_INPUTS[N_INPUTS] = {36, 39, 34, 35, 32, 33, 26, 27, 14, 12, 13, 4, 2, 15};
     int VMEM[16] = {0};
-    int VINPUTS[32] = {1};
+    int VINPUTS[32] = {0};
+
+    int _time_loop = 0;
+    int _time_loop_multiplier = 0;
+    int _time_loop_period = 0;
+
+    int _preset_pot = 0;
+    int _preset_switch1 = 0;
+    int _preset_switch2 = 0;
+
+    int _color_cut_period = 0;
+    int _color_cut_width = 0;
+    
+
+    int _color_select_start = 0;
+    int _color_select_range = 0;
+    int _color_select_end = 0; //not a button, virtual value
+
+    int _slit_index = 0;
+    int _slit_mode = 0; // 0 off, 1 hor, 2 vert
+
+    int _sym_vertical = 0; // 0 off, 1 first half, 2 last half
+    int _sym_horizontal = 0; // 0 off, 1 first half, 2 last half
+
+    int _buttons = 0;
+
     void get_inputs();
 
     int lines_size;
@@ -31,7 +60,7 @@ public:
     int h_offset_start = 11;
     int w_offset_end = 9;
     int h_offset_end = 2;
-    short frame_counter = 0;
+    int frame_counter = 0;
     short _mouv = 0;
     float inv_height, inv_width;
     VSpace(uint8_t **__lines, int w, int h);
@@ -51,6 +80,7 @@ public:
     void SquareInvasion(bool, bool);
     void Mirrors(bool, bool);
     void Linez();
+    void Linez2();
     void TestCard();
     void _state();
     void _reset(bool);

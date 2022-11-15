@@ -18,7 +18,7 @@
 #include "esp_int_wdt.h"
 #include "esp_spiffs.h"
 
-//#define PERF  // some stats about where we spend our time
+#define PERF  // some stats about where we spend our time
 #include "src/emu.h"
 #include "src/video_out.h"
 
@@ -28,7 +28,6 @@
 
 //  Choose one of the video standards: PAL,NTSC
 #define VIDEO_STANDARD PAL
-
 //  Choose one of the following emulators: EMU_NES,EMU_SMS,EMU_ATARI
 #define EMULATOR EMU_ATARI
 
